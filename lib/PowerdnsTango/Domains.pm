@@ -10,6 +10,7 @@ use Data::Page;
 use Data::Validate::Domain qw(is_domain);
 use Data::Validate::IP qw(is_ipv4 is_ipv6);
 use PowerdnsTango::Acl qw(user_acl);
+use PowerdnsTango::Validate::Records qw(check_valid_masters);
 
 our $VERSION = '0.3';
 
@@ -189,7 +190,7 @@ post '/domains/add' => sub
 
 		flash message => "Domain $domain added";
 	}
-	elsif (is_domain($domain) && $type =~ m/^SLAVE$/i && (defined $master) && ((is_domain($master)) || (is_ipv4($master)) || (is_ipv6($master))))
+	elsif (is_domain($domain) && $type =~ m/^SLAVE$/i && check_valid_masters(\$master))
 	{
                 database->quick_insert('domains', { name => $domain, type => $type, master => $master, notified_serial => ($year . $month . $day . 0 . 1) });
                 my $get_id = database->quick_select('domains', { name => $domain });
@@ -198,9 +199,10 @@ post '/domains/add' => sub
 
                 flash message => "Domain $domain added";
 	}
-	elsif (is_domain($domain) && $type =~ m/^SLAVE$/i && (! defined $master) || ((! is_domain($master)) && (! is_ipv4($master)) && (! is_ipv6($master))))
+	elsif (is_domain($domain) && $type =~ m/^SLAVE$/i && !check_valid_masters($master))
 	{
-		flash error => "A vaild master address must be provided";
+                use Data::Dumper;
+		flash error => "A vaild master address or list of comma separated master addresses must be provided".Dumper($master)."XX";
 	}
 
 	
@@ -313,7 +315,7 @@ post '/domains/add/bulk' => sub
                         $status .= $msg;
 			$success++;
         	}
-        	elsif (is_domain($domain) && ($type =~ m/^SLAVE$/i) && (defined $master) && ((is_domain($master)) || (is_ipv4($master)) || (is_ipv6($master))))
+        	elsif (is_domain($domain) && ($type =~ m/^SLAVE$/i) && check_valid_masters(\$master))
         	{
                 	database->quick_insert('domains', { name => $domain, type => $type, master => $master, notified_serial => ($year . $month . $day . 0 . 1) });
                 	my $get_id = database->quick_select('domains', { name => $domain });
@@ -322,7 +324,7 @@ post '/domains/add/bulk' => sub
                         $status .= $msg;
 			$success++;
         	}
-        	elsif (is_domain($domain) && ($type =~ m/^SLAVE$/i) && (! defined $master) || ((! is_domain($master)) && (! is_ipv4($master)) && (! is_ipv6($master))))
+        	elsif (is_domain($domain) && ($type =~ m/^SLAVE$/i) && !check_valid_masters($master))
         	{
                         $err = template 'error-format', { error => "Domain $domain was not added, a valid master address must be provided" }, { layout => undef };
                         $status .= $err;
@@ -461,15 +463,15 @@ ajax '/domains/update' => sub
 			database->quick_update('records', { id => $row->{id} }, { name => $row->{name}, content => $row->{content} });
                 }
         }
-        elsif (is_domain($domain) && ($type =~ m/^SLAVE$/i) && (defined $master) && ((is_domain($master)) || (is_ipv4($master)) || (is_ipv6($master))))
+        elsif (is_domain($domain) && ($type =~ m/^SLAVE$/i) && check_valid_masters(\$master))
         {
 		database->quick_update('domains', { id => $id }, { name => $domain, type => $type, master => $master });
                 database->quick_delete('records', { domain_id => $id });
         }
-	elsif ((! defined $master) || ((! is_domain($master)) && (! is_ipv4($master)) && (! is_ipv6($master))))
-	{
-		return { stat => 'fail', message => 'Domain update failed, a valid master address is required' };
-	}
+        elsif (!check_valid_masters($master))
+        {
+                return { stat => 'fail', message => 'Domain update failed, a valid master address is required' };
+        }
         else
         {
 		return { stat => 'fail', message => 'Domain update failed' };

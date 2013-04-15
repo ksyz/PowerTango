@@ -11,7 +11,7 @@ use Email::Valid;
 use DateTime;
 use Data::Page;
 use PowerdnsTango::Acl qw(user_acl);
-use PowerdnsTango::Validate::Records qw(check_soa check_record calc_serial);
+use PowerdnsTango::Validate::Records qw(check_soa check_record calc_serial check_valid_masters);
 
 our $VERSION = '0.2';
 
@@ -250,8 +250,7 @@ post '/domains/edit/records/id/:id/update/domain' => sub {
     }
     elsif (  is_domain($domain)
           && ($type =~ m/^SLAVE$/i)
-          && (defined $master)
-          && ((is_domain($master)) || (is_ipv4($master)) || (is_ipv6($master))))
+          && check_valid_masters(\$master))
     {
         database->quick_update(
                                'domains',
@@ -270,12 +269,10 @@ post '/domains/edit/records/id/:id/update/domain' => sub {
 
         flash message => "Domain updated";
     }
-    elsif ((!defined $master)
-        || ((!is_domain($master)) && (!is_ipv4($master)) && (!is_ipv6($master)))
-      )
+    elsif (!check_valid_masters($master))
     {
         flash error =>
-          "Domain update failed, a valid master address must be provided";
+          "Domain update failed, a valid master address or list of comma separated master addresses must be provided";
     }
     else
     {

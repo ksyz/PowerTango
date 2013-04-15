@@ -28,7 +28,7 @@
                 		</li>
 				<li id="add_master_addr_display" class="display_hidden">
 					<label>Master Address</label>	
-				 	<input id="add_master_addr" name="add_master_addr" class="ui-corner-all" maxlength="128" type="text" value="" />
+				 	<input id="add_master_addr" name="add_master_addr" class="ui-corner-all" maxlength="128" type="text" value="" title="Comma separated list of masters" />
 				</li>
                                 <li id="add_template">
                                         <label>Template</label>

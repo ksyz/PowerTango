@@ -10,7 +10,7 @@ use DateTime;
 
 use base "Exporter";
 
-our @EXPORT  = qw(check_soa check_record calc_serial);
+our @EXPORT  = qw(check_soa check_record calc_serial check_valid_masters);
 our $VERSION = '0.2';
 
 sub check_soa
@@ -228,6 +228,44 @@ sub soa_email_regex
                  )  +[a-z]{2,63}
 
            \b/xmsi;
+}
+
+sub check_valid_masters {
+    my $_masters = shift;
+    my $masters;
+
+
+    if (ref($_masters) eq "SCALAR") {
+        $masters = ${$_masters};
+    }
+    else {
+        $masters = $_masters;
+    }
+
+    return undef
+        unless defined $masters;
+
+    my @masters = split(/\s*,\s*/, $masters);
+
+    return undef
+        if (scalar @masters < 1);
+
+    for (@masters) {
+        return undef 
+            if (!is_domain($_) && !is_ipv4($_) && !is_ipv6($_));
+    }
+
+    if (!wantarray or ref($_masters)) {
+        my $new_masters = join(',', @masters);
+
+        $_masters = \$new_masters
+            if (ref($_masters));
+
+        return $new_masters;
+    }
+    else {
+        return @masters;
+    }
 }
 
 1;

@@ -86,7 +86,7 @@
 					<td>
 						<div class="table_formatter table_formatter_domain_info ui-corner-all table_formatter_color2">
 							<span id="domain_master_[% domain_id %]">[% domain_master %]</span>
-                                        		<input id="domain_edit_master_[% domain_id %]" name="edit_master" class="ui-corner-all display_hidden" type="text" maxlength="128" value="[% domain_master %]" />
+                                        		<input id="domain_edit_master_[% domain_id %]" name="edit_master" class="ui-corner-all display_hidden" type="text" maxlength="128" value="[% domain_master %]" title="Comma separated list of masters" />
                                         	</div>
 					</td>
                         	</tr>
