@@ -9,9 +9,8 @@ use Dancer::Plugin::Email;
 use Crypt::SaltedHash;
 use Data::Page;
 use Email::Valid;
-use Data::Validate::Domain qw(is_domain);
 use PowerdnsTango::Acl qw(user_acl);
-use PowerdnsTango::Validate::Records qw(check_soa);
+use PowerdnsTango::Validate::Records qw(check_soa is_domain);
 
 our $VERSION = '0.2';
 

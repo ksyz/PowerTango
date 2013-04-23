@@ -6,8 +6,8 @@ use Dancer::Session::Storable;
 use Dancer::Template::TemplateToolkit;
 use Dancer::Plugin::Ajax;
 use Data::Page;
-use Data::Validate::Domain qw(is_domain);
 use PowerdnsTango::Acl qw(user_acl);
+use PowerdnsTango::Validate::Records qw(is_domain);
 
 our $VERSION = '0.2';
 

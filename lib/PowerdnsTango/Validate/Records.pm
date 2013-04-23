@@ -3,7 +3,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::Database;
 use Dancer::Plugin::FlashMessage;
 use Dancer::Session::Storable;
-use Data::Validate::Domain qw(is_domain);
+use Data::Validate::Domain;
 use Data::Validate::IP qw(is_ipv4 is_ipv6);
 use Scalar::Util qw(looks_like_number);
 use Email::Valid;
@@ -11,7 +11,7 @@ use DateTime;
 
 use base "Exporter";
 
-our @EXPORT  = qw(check_soa check_record calc_serial check_valid_masters);
+our @EXPORT  = qw(check_soa check_record calc_serial check_valid_masters is_domain);
 our $VERSION = '0.2';
 
 sub check_soa
@@ -268,6 +268,17 @@ sub check_valid_masters {
     else {
         return @masters;
     }
+}
+
+sub is_domain {
+	my $_domain = shift;
+	my $conf = config->{dns}{additional_valid_tld};
+
+	return Data::Validate::Domain::is_domain($_domain, {
+		domain_allow_underscore => 1,
+		domain_allow_single_label => 1,
+		domain_private_tld => { map { $_ => 1 } @$conf},
+	});
 }
 
 1;

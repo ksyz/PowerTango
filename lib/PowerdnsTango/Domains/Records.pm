@@ -5,13 +5,12 @@ use Dancer::Plugin::FlashMessage;
 use Dancer::Session::Storable;
 use Dancer::Template::TemplateToolkit;
 use Dancer::Plugin::Ajax;
-use Data::Validate::Domain qw(is_domain);
 use Data::Validate::IP qw(is_ipv4 is_ipv6);
 use Email::Valid;
 use DateTime;
 use Data::Page;
 use PowerdnsTango::Acl qw(user_acl);
-use PowerdnsTango::Validate::Records qw(check_soa check_record calc_serial check_valid_masters);
+use PowerdnsTango::Validate::Records qw(check_soa check_record calc_serial check_valid_masters is_domain);
 
 our $VERSION = '0.2';
 
