@@ -5,6 +5,7 @@ use Dancer::Plugin::FlashMessage;
 use Dancer::Session::Storable;
 use Data::Validate::Domain qw(is_domain);
 use Data::Validate::IP qw(is_ipv4 is_ipv6);
+use Scalar::Util qw(looks_like_number);
 use Email::Valid;
 use DateTime;
 
@@ -19,6 +20,7 @@ sub check_soa
     my $soa_email = soa_email_regex();
     my $stat      = 1;
     my $message   = "ok";
+	my $conf = config->{dns};
 
     if (!defined $name_server || !is_domain($name_server))
     {
@@ -30,36 +32,36 @@ sub check_soa
           "$contact does not appear to be a valid SOA contact (see: rfc 1912).";
     }
     elsif (   !defined $refresh
-           || $refresh !~ m/^(\d)+$/
-           || $refresh < 1200
-           || $refresh > 43200)
+           || !looks_like_number($refresh)
+           || $refresh < $conf->{soa_refresh_min}
+           || $refresh > $conf->{soa_refresh_max})
     {
-        $message = "refresh must be a number between 1200 and 43200";
+        $message = "REFRESH must be a number between $conf->{soa_refresh_min} and $conf->{soa_refresh_max}";
     }
     elsif (   !defined $retry
-           || $retry !~ m/^(\d)+$/
-           || $retry < 180
-           || $retry > 900)
+           || !looks_like_number($retry)
+           || $retry < $conf->{soa_retry_min}
+           || $retry > $conf->{soa_retry_max})
     {
-        $message = "retry must be a number between 180 and 900";
+        $message = "RETRY must be a number between $conf->{soa_retry_min} and $conf->{soa_retry_max}";
     }
     elsif (   !defined $expire
-           || $expire !~ m/^(\d)+$/
-           || $expire < 1209600
-           || $expire > 2419200)
+           || !looks_like_number($expire)
+           || $expire < $conf->{soa_expire_min}
+           || $expire > $conf->{soa_expire_max})
     {
-        $message = "expire must be a number between 1209600 and 2419200";
+        $message = "EXPIRE must be a number between $conf->{soa_expire_min} and $conf->{soa_expire_max}";
     }
     elsif (   !defined $minimum
-           || $minimum !~ m/^(\d)+$/
-           || $minimum < 3600
-           || $minimum >= 10800)
+           || !looks_like_number($minimum)
+           || $minimum < $conf->{soa_minimum_min}
+           || $minimum > $conf->{soa_minimum_max})
     {
-        $message = "minimum must be a number between 3600 and 10800";
+        $message = "MINIMUM must be a number between $conf->{soa_minimum_min} and $conf->{soa_minimum_max}";
     }
-    elsif (!defined $ttl || $ttl !~ m/^(\d)+$/ || $ttl < 3600)
+    elsif (!defined $ttl || !looks_like_number($ttl) || $ttl < $conf->{soa_ttl_min} || $ttl > $conf->{soa_ttl_max})
     {
-        $message = "ttl must be a number equal or greater than 3600";
+        $message = "RR TTL must be a number between $conf->{soa_ttl_min} and $conf->{soa_ttl_max}";
     }
     else
     {

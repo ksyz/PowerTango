@@ -10,6 +10,19 @@ charset: "UTF-8"
 template: "template_toolkit"
 serializer: "JSON"
 
+dns:
+    additional_valid_tld: [nx, lan, test]
+    soa_refresh_min: 1200
+    soa_refresh_max: 43200
+    soa_retry_min: 180
+    soa_retry_max: 900
+    soa_expire_min: 1209600
+    soa_expire_max: 2419200
+    soa_minimum_min: 3600
+    soa_minimum_max: 10800
+    soa_ttl_min: 3600
+    soa_ttl_max: 4294967296
+
 engines:
   template_toolkit:
     encoding:  'utf8'
