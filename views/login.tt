@@ -1,4 +1,13 @@
-<script>$(function(){$('input:submit, button').button();$('img').tipTip();$('#login_form').validate({rules:{login:'required',password:'required',},})});</script>
+<script> $(function () {
+	$('input:submit, button').button();
+	$('img').tipTip();
+	$('#login_form').validate({
+		rules: {
+			login: 'required',
+			password: 'required',
+		},
+	})
+}); </script>
 <span class="page_title">Login</span>
 [% IF account_signup == 'enabled' || account_signup == 'admin' %]
 	<span id="signup_link"><a href="/signup">Sign up now</a></span>

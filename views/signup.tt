@@ -1,4 +1,22 @@
-<script>$(function(){$('input:submit, button, .button_format').button();$('img').tipTip({delay:'800'});$("#signup_form").validate({rules:{login:'required',name:'required',password1:'required',password2:'required',email:{required:true,email:true},captcha_input:'required',},})});</script>
+<script> $(function () {
+	$('input:submit, button, .button_format').button();
+	$('img').tipTip({
+		delay: '800'
+	});
+	$("#signup_form").validate({
+		rules: {
+			login: 'required',
+			name: 'required',
+			password1: 'required',
+			password2: 'required',
+			email: {
+				required: true,
+				email: true
+			},
+			captcha_input: 'required',
+		},
+	})
+}); </script>
 <span class="page_title">Sign up</span>
 <div class="line_break"></div>
 <div class="content_break"></div>
