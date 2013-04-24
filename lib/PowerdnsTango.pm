@@ -22,15 +22,12 @@ use PowerdnsTango::Validate::Records qw(check_soa check_record calc_serial);
 our $VERSION = '0.3';
 
 
-before sub
-{
-	if (! session('logged_in') && (request->path_info !~ m{^/login} && request->path_info !~ m{^/password} && request->path_info !~ m{^/signup} ))
-	{
+hook before => sub {
+	if (! session('logged_in') && (request->path_info !~ m{^/login} && request->path_info !~ m{^/password} && request->path_info !~ m{^/signup} )) {
 		var requested_path => request->path_info;
 		request->path_info('/login');
 	}
 };
-
 
 any ['get', 'post'] => '/login' => sub
 {
