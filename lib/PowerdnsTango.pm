@@ -32,6 +32,11 @@ hook before => sub {
 any ['get', 'post'] => '/login' => sub
 {
 	my $recover_password = 0;
+
+	# should be handled more elegantly, like return fancy 503
+	return undef
+		unless (database);
+
 	my $account_signup = database->quick_select('admin_settings_tango', { setting => 'account_signup' }) || 'disabled';
 	my $account_password_recovery = database->quick_select('admin_settings_tango', { setting => 'password_recovery' }) || 'disabled';
 
