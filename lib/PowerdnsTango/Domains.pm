@@ -455,22 +455,22 @@ ajax '/domains/update' => sub
 };
 
 
-ajax '/domains/get' => sub
-{
-        my $id = params->{id} || 0;
+ajax '/domains/get' => sub {
+	my $id = params->{id} || undef;
 	my $perm = user_acl($id, 'domain');
 
+	return { stat => 'fail', message => 'Missing domain ID' }
+		unless ($id);
 
-        if ($perm == 1)
-        {
-                return { stat => 'fail', message => 'Permission denied' };
-        }
-
+	return { stat => 'fail', message => 'Permission denied' }
+		if ($perm == 1);
 
 	my $domain = database->quick_select('domains', { id => $id });
 
-
-        return { stat => 'ok', id => $id, name => $domain->{name}, type => $domain->{type}, master => $domain->{master} };
+	return { 
+		stat => 'ok', id => $id, name => $domain->{name}, type => $domain->{type}, 
+		master => $domain->{master} 
+	};
 };
 
 
