@@ -4,7 +4,7 @@
 	$('img').tipTip({
 		delay: '800'
 	});
-	[ % IF flash.detail % ]
+	[% IF flash.detail %]
 	var link = '<a id="detail_message_button" href="#">show details</a>';
 	$('#status_msg').append(link);
 	$('#error_msg').append(link);
@@ -18,7 +18,8 @@
 		e.preventDefault();
 		$("#detail_message").dialog("open")
 	});
-	[ % END % ] $('#add_domain_form').validate({
+	[% END %]
+	$('#add_domain_form').validate({
 		rules: {
 			add_domain_name: 'required',
 		},
