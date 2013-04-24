@@ -14,119 +14,96 @@ use PowerdnsTango::Validate::Records qw(check_valid_masters is_domain);
 our $VERSION = '0.3';
 
 
-any ['get', 'post'] => '/domains' => sub
-{
+any ['get', 'post'] => '/domains' => sub {
 	my $load_page = params->{p} || 1;
 	my $results_per_page = params->{r} || 25;
-	my $search = params->{domain_search} || 0;
-	my $sth;
-	my $page;
-	my $display;
-	my $count;
+	my $search = params->{domain_search} || undef;
+	my ($st_domain_count, $st_domains, $page, $display, $count);
 	my $user_type = session 'user_type';
 	my $user_id = session 'user_id';
 
-
-	if (request->method() eq "POST" && $search ne '0')
-	{
-		if ($user_type eq 'admin')
-		{
-                        $sth = database->prepare('select count(id) as count from domains where name like ?');
-                        $sth->execute("%$search%");
+	# Requested search
+	if (request->method() eq "POST" && defined $search) {
+		if ($user_type eq 'admin') {
+			$st_domain_count = database->prepare('SELECT COUNT(id) AS count FROM domains WHERE name LIKE ?');
+			$st_domain_count->execute("%$search%");
 		}
-		else
-		{
-                        $sth = database->prepare('select count(domains.id) as count from domains, domains_acl_tango where (domains.id = domains_acl_tango.domain_id) and domains_acl_tango.user_id = ? and name like ?');
-                        $sth->execute($user_id, "%$search%");
+		else {
+			$st_domain_count = database->prepare('SELECT COUNT(domains.id) AS count FROM domains AS d LEFT JOIN domains_acl_tango AS da ON (d.id = da.domain_id) WHERE da.user_id = ? AND d.name LIKE ?');
+			$st_domain_count->execute($user_id, "%$search%");
 		}
-
-
-        	$count = $sth->fetchrow_hashref;
-        	$page = Data::Page->new();
-        	$page->total_entries($count->{'count'});
-        	$page->entries_per_page($results_per_page);
-        	$page->current_page($load_page);
-
-        	$display = ($page->entries_per_page * ($page->current_page - 1));
-        	$load_page = $page->last_page if ($load_page > $page->last_page);
-        	$load_page = $page->first_page if ($load_page == 0);
-
-
-		if ($user_type eq 'admin')
-		{
-                        $sth = database->prepare('select * from domains where name like ? limit ? offset ?');
-                        $sth->execute("%$search%", $page->entries_per_page, $display);
-		}
-		else
-		{
-                        $sth = database->prepare('select domains.* from domains, domains_acl_tango where (domains.id = domains_acl_tango.domain_id) and domains_acl_tango.user_id = ? and name like ? limit ? offset ?');
-                        $sth->execute($user_id, "%$search%", $page->entries_per_page, $display);
-		}
-
-
-		flash error => "Domain search found no match" if ($count->{'count'} == 0);
-		flash message => "Domain search found $count->{'count'} matches" if ($count->{'count'} >= 1);
 	}
-	else
-	{
-		if ($user_type eq 'admin')
-		{
-                        $sth = database->prepare('select count(id) as count from domains');
-                        $sth->execute();
+	# requested list all
+	else {
+		if ($user_type eq 'admin') {
+			$st_domain_count = database->prepare('SELECT COUNT(id) AS count FROM domains');
+			$st_domain_count->execute();
 		}
-		else
-		{
-                        $sth = database->prepare('select count(domains.id) as count from domains, domains_acl_tango where (domains.id = domains_acl_tango.domain_id) and domains_acl_tango.user_id = ?');
-                        $sth->execute($user_id);
+		else {
+			$st_domain_count = database->prepare('SELECT COUNT(d.id) FROM domains AS d LEFT JOIN domains_acl_tango AS da ON (d.id = da.domain_id) WHERE da.user_id = ?');
+			$st_domain_count->execute($user_id);
 		}
-
-	
-        	$count = $sth->fetchrow_hashref;
-
-        	$page = Data::Page->new();
-        	$page->total_entries($count->{'count'});
-        	$page->entries_per_page($results_per_page);
-        	$page->current_page($load_page);
-
-        	$display = ($page->entries_per_page * ($page->current_page - 1));
-        	$load_page = $page->last_page if ($load_page > $page->last_page);
-        	$load_page = $page->first_page if ($load_page == 0);
-
-
-		if ($user_type eq 'admin')
-		{
-                        $sth = database->prepare('select * from domains limit ? offset ?');
-                        $sth->execute($page->entries_per_page, $display);
-		}
-		else
-		{
-                        $sth = database->prepare('select domains.* from domains, domains_acl_tango where (domains.id = domains_acl_tango.domain_id) and domains_acl_tango.user_id = ? limit ? offset ?');
-                        $sth->execute($user_id, $page->entries_per_page, $display);
-		}
-
-
 	}
 
+	$count = $st_domain_count->fetchrow_hashref;
+	if ($count->{count}) {
+		# Pager helper
+		$page = Data::Page->new();
+		$page->total_entries($count->{'count'});
+		$page->entries_per_page($results_per_page);
+		$page->current_page($load_page);
 
-	my $templates;
+		$display = ($page->entries_per_page * ($page->current_page - 1));
+		$load_page = $page->last_page if ($load_page > $page->last_page);
+		$load_page = $page->first_page if ($load_page == 0);
 
+		if (request->method() eq "POST" && defined $search) {
+			if ($user_type eq 'admin') {
+				$st_domains = database->prepare('SELECT * FROM domains WHERE name LIKE ? LIMIT ? OFFSET ?');
+				$st_domains->execute("%$search%", $page->entries_per_page, $display);
+			}
+			else {
+				$st_domains = database->prepare('SELECT d.* FROM domains AS d LEFT JOIN domains_acl_tango AS da ON (d.id = da.domain_id) WHERE da.user_id = ? AND d.name LIKE ? LIMIT ? OFFSET ?');
+				$st_domains->execute($user_id, "%$search%", $page->entries_per_page, $display);
+			}
 
-	if ($user_type eq 'admin')
-	{
-                $templates = database->prepare('select * from templates_tango');
-                $templates->execute();
+			flash message => "Domain search found $count->{'count'} matches" if ($count->{'count'} >= 1);
+		}
+		else {
+			if ($user_type eq 'admin') {
+				$st_domains = database->prepare('SELECT * FROM domains LIMIT ? OFFSET ?');
+				$st_domains->execute($page->entries_per_page, $display);
+			}
+			else {
+				$st_domains = database->prepare('SELECT d.* FROM domains AS d LEFT JOIN domains_acl_tango AS da ON (d.id = da.domain_id) WHERE da.user_id = ? LIMIT ? OFFSET ?');
+				$st_domains->execute($user_id, $page->entries_per_page, $display);
+			}
+		}
 	}
-	else
-	{
-                $templates = database->prepare('select templates_tango.* from templates_tango, templates_acl_tango where (templates_tango.id = templates_acl_tango.template_id) and templates_acl_tango.user_id = ?');
-                $templates->execute($user_id);
+	else {
+		flash error => "Domain search found no match";
 	}
 
+	my $st_templates;
 
-        template 'domains', { domains => $sth->fetchall_hashref('name'), templates => $templates->fetchall_hashref('id'), page => $load_page, results => $results_per_page, previouspage => ($load_page - 1), 
-	nextpage => ($load_page + 1), lastpage => $page->last_page };
+	if ($user_type eq 'admin') {
+		$st_templates = database->prepare('SELECT * FROM templates_tango');
+		$st_templates->execute();
+	}
+	else {
+		$st_templates = database->prepare(' SELECT t.* FROM templates_tango AS t LEFT JOIN templates_acl_tango AS ta ON (t.id = ta.template_id) WHERE ta.user_id = ?');
+		$st_templates->execute($user_id);
+	}
+	template('domains', {
+		domains => ($st_domains ? $st_domains->fetchall_hashref('id') : {}),
+		templates => ($st_templates ? $st_templates->fetchall_hashref('id') : {}),
+		page => $load_page, 
+		results => $results_per_page, 
+		previouspage => ($load_page - 1), 
+		nextpage => ($load_page + 1), 
+		lastpage => ($page ? $page->last_page : 0),
+	});
 };
-
 
 post '/domains/add' => sub
 {
