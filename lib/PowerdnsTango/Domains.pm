@@ -391,67 +391,56 @@ get '/domains/delete/id/:id' => sub
 	return redirect '/domains';
 };
 
+ajax '/domains/update' => sub {
+	my $id = params->{id} || undef;
+	my $domain = params->{name} || '';
+	my $type = params->{type} || undef;
+	my $master = params->{master} || '';
+	
+	my $perm = user_acl($id, 'domain');
+	my $user_type = session 'user_type';
+	my $user_id = session 'user_id';
 
-ajax '/domains/update' => sub
-{
-	my $id = params->{id} || 0;
-	my $domain = params->{name} || 0;
-	my $type = params->{type} || 0;
-	my $master = params->{master};
-        my $perm = user_acl($id, 'domain');
-        my $user_type = session 'user_type';
-        my $user_id = session 'user_id';
+	return { stat => 'fail', message => 'Permission denied' }
+		if ($perm == 1);
 
+	return { stat => 'fail', message => 'Invalid domain name' }
+		unless is_domain($domain);
 
-        if ($perm == 1)
-        {
-                return { stat => 'fail', message => 'Permission denied' };
-        }
+	my $domain_exists = database->quick_lookup('domain', {name => $domain}, 'name');
+	my $old_domain = database->quick_select('domains', {id => $id});
 
-
-        my $sth = database->prepare("select count(name) as count from domains where name = ?");
-        $sth->execute($domain);
-        my $count = $sth->fetchrow_hashref;
-
-	$sth = database->prepare("select name from domains where id = ?");
-	$sth->execute($id);
-	my $old_domain = $sth->fetchrow_hashref;
-
-
-	if (($count->{count} != 0) && ($old_domain->{name} ne $domain))
-	{
-		return { stat => 'fail', message => "Domain $domain already exists" };
+	if (defined $domain_exists and defined $old_domain and $old_domain->{name} ne $domain) {
+		# we are not just updating other params
+		return { stat => 'fail', message => "Domain already exists" };
 	}
-	elsif (is_domain($domain) && ($type =~ m/^NATIVE$/i || $type =~ m/^MASTER$/i))
-        {
+	elsif ($type eq 'NATIVE' or $type eq 'MASTER') {
 		database->quick_update('domains', { id => $id }, { name => $domain, type => $type, master => undef });
-		$sth = database->prepare("select * from records where domain_id = ?");
-		$sth->execute($id);
+		my @domain_records = database->quick_select('records', {domain_id => $id});
 
-                while (my $row = $sth->fetchrow_hashref)
-                {
-                        $row->{name} =~ s/$old_domain->{name}/$domain/i;
-                        $row->{content} =~ s/$old_domain->{name}/$domain/i;
+		for my $record (@domain_records) {
+			$record->{name} =~ s/$old_domain->{name}/$domain/i;
+			$record->{content} =~ s/$old_domain->{name}/$domain/i;
+			database->quick_update('records', { id => $record->{id} }, 
+				{ name => $record->{name}, content => $record->{content} });
+		}
+	}
+	elsif ($type eq 'SLAVE') {
+		 # checking for valid list of masters (check also rewrites value)
+		return { stat => 'fail', 
+			message => "A vaild master address or list of ".
+				"comma separated master addresses must be provided" 
+		} unless check_valid_masters(\$master);
 
-			database->quick_update('records', { id => $row->{id} }, { name => $row->{name}, content => $row->{content} });
-                }
-        }
-        elsif (is_domain($domain) && ($type =~ m/^SLAVE$/i) && check_valid_masters(\$master))
-        {
 		database->quick_update('domains', { id => $id }, { name => $domain, type => $type, master => $master });
-                database->quick_delete('records', { domain_id => $id });
-        }
-        elsif (!check_valid_masters($master))
-        {
-                return { stat => 'fail', message => 'Domain update failed, a valid master address is required' };
-        }
-        else
-        {
+		database->quick_delete('records', { domain_id => $id });
+	}
+	else {
 		return { stat => 'fail', message => 'Domain update failed' };
-        }
+	}
 
-
-	return { stat => 'ok', message => 'Domain updated', id => $id, name => $domain, type => $type, master => $master };
+	return { stat => 'ok', message => 'Domain updated', id => $id, name => $domain, 
+		type => $type, master => $master };
 };
 
 
