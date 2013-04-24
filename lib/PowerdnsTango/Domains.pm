@@ -359,34 +359,23 @@ post '/domains/add/bulk' => sub
 };
 
 
-get '/domains/delete/id/:id' => sub
-{
-	my $id = params->{id} || 0;
-        my $perm = user_acl($id, 'domain');
+get '/domains/delete/id/:id' => sub {
+	my $id = params->{id} || undef;
+	my $perm = user_acl($id, 'domain');
 
-
-        if ($perm == 1)
-        {
-                flash error => "Permission denied";
-
-                return redirect '/domains';
-        }
-
-
-	if ($id != 0)
-	{
+	if ($perm == 1) {
+		flash error => "Permission denied";
+	}
+	elsif (not defined $id) {
+		flash error => 'Missing domain ID';
+	}
+	else {
 		database->quick_delete('domains', { id => $id });
 		database->quick_delete('records', { domain_id => $id });
 		database->quick_delete('domains_acl_tango', { domain_id => $id });
 
-
 		flash message => "Domain deleted";
 	}
-	else
-	{
-		flash error => "Domain deleted failed";
-	}
-
 
 	return redirect '/domains';
 };
