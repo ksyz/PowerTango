@@ -251,6 +251,71 @@
 			}
 		})
 	});
+	$('.add_domain_button').click(function (e) {
+		e.preventDefault();
+		$('.flash').fadeOut();
+		var record = {
+			add_domain_name: $('#add_domain_name').val(),
+			add_domain_type: $('#add_domain_type').val(),
+			add_master_addr: $('#add_master_addr').val(),
+			add_domain_template: $('#add_domain_template').val()
+		};
+		$.ajax({
+			type: 'POST',
+			url: '/domains/add',
+			dataType: "json",
+			data: record,
+			cache: false,
+			statusCode: {
+				404: function () {
+					$('#error_msg_txt_ajax').text('Could not contact server');
+					$('#error_msg_ajax').fadeIn()
+				},
+				500: function () {
+					$('#error_msg_txt_ajax').text('A server-side error has occurred');
+					$('#error_msg_ajax').fadeIn()
+				}
+			},
+			error: function () {
+				$('#error_msg_txt_ajax').text('A problem has occurred');
+				$('#error_msg_ajax').fadeIn()
+			},
+			success: function (json) {
+				var id = json.id;
+				var stat = json.stat;
+				var message = json.message;
+				var name = json.name;
+				var type = json.type;
+				var master = json.master;
+				if (stat == 'ok') {
+					var count = $('#slave_count').val();
+					count--;
+					$('input[id=slave_count]').val(count);
+					$('#display_master_' + id).hide();
+					if (count == 0) {
+						$('.table_formatter_domains').width('540px');
+						$('.td_formatter_type').width('100px');
+						$('.table_formatter_type').width('100px')
+					}
+					$('#edit_name_' + id).hide();
+					$('#edit_type_' + id).hide();
+					$('#domain_' + id).text(name);
+					$('#type_' + id).text(type);
+					$('#domain_' + id).fadeIn();
+					$('#type_' + id).fadeIn();
+					$('#save_domain_' + id).hide();
+					$('#cancel_domain_' + id).hide();
+					$('#edit_domain_' + id).fadeIn();
+					$('#delete_domain_' + id).fadeIn();
+					$('#status_msg_txt_ajax').text(message);
+					$('#status_msg_ajax').fadeIn()
+				} else {
+					$('#error_msg_txt_ajax').text(message);
+					$('#error_msg_ajax').fadeIn()
+				}
+			}
+		})
+	});
 	$('.cancel_domain_button').click(function (e) {
 		e.preventDefault();
 		$('.flash').fadeOut();
@@ -316,8 +381,8 @@
 }); </script>
 <div id="mini_menu_bg">
 	<ul id="mini_menu">
-        	<li><a id="display_add_button" class="display_add_button" href="#">Add domain</a></li>
-                <li><a id="display_add_bulk_button" href="#">Add bulk domains</a></li>
+		<li><a id="display_add_button" class="display_add_button" href="#">Add domain</a></li>
+		<li><a id="display_add_bulk_button" href="#">Add bulk domains</a></li>
 	</ul>
 </div>
 <div id="display_add_block" class="display_hidden">
@@ -328,36 +393,36 @@
 	<div class="content_break"></div>
 	<div id="display_add">
 		<form id="add_domain_form" method="post" action="/domains/add">
-        		<ul class="form ui-corner-all">
-                		<li id="add_name">
-                  			<label>Domain</label>
-                  			<input id="add_domain_name" name="add_domain_name" type="text" value="" maxlength="255" class="ui-corner-all" />
-                		</li>
-                		<li id="add_type">
-                  			<label>Type</label>
-                  			<select id="add_domain_type" title="Select one" name="add_domain_type">
-						<option value="NATIVE" selected="selected">NATIVE</option>
-                                		<option value="MASTER">MASTER</option>
-                                		<option value="SLAVE">SLAVE</option>
-                   			</select>
-                		</li>
-				<li id="add_master_addr_display" class="display_hidden">
-					<label>Master Address</label>	
-				 	<input id="add_master_addr" name="add_master_addr" class="ui-corner-all" maxlength="128" type="text" value="" title="Comma separated list of masters" />
+			<ul class="form ui-corner-all">
+				<li id="add_name">
+					<label>Domain</label>
+					<input id="add_domain_name" name="add_domain_name" type="text" value="" maxlength="255" class="ui-corner-all" />
 				</li>
-                                <li id="add_template">
-                                        <label>Template</label>
-                                        <select id="add_domain_template" title="Select one" name="add_domain_template">
-						<option value="0" selected="selected">none</option>
-                                        	[% FOREACH id IN templates.keys.sort %]
-                                                	<option value="[% templates.$id.id %]">[% templates.$id.name %]</option>
-                                        	[% END %]
-                                        </select>
-                                </li>
-                		<li>
-                        		<input type="submit" value="Save" /><button class="display_add_hide">Cancel</button>
-                		</li>
-        		</ul>
+			<li id="add_type">
+				<label>Type</label>
+				<select id="add_domain_type" title="Select one" name="add_domain_type">
+					<option value="NATIVE" selected="selected">NATIVE</option>
+					<option value="MASTER">MASTER</option>
+					<option value="SLAVE">SLAVE</option>
+				</select>
+			</li>
+			<li id="add_master_addr_display" class="display_hidden">
+				<label>Master Address</label>	
+				<input id="add_master_addr" name="add_master_addr" class="ui-corner-all" maxlength="128" type="text" value="" title="Comma separated list of masters" />
+			</li>
+			<li id="add_template">
+				<label>Template</label>
+				<select id="add_domain_template" title="Select one" name="add_domain_template">
+				<option value="0" selected="selected">none</option>
+				[% FOREACH id IN templates.keys.sort %]
+				<option value="[% templates.$id.id %]">[% templates.$id.name %]</option>
+				[% END %]
+				</select>
+			</li>
+			<li>
+				<button class="add_domain_button">Save</button><button class="display_add_hide">Cancel</button>
+			</li>
+			</ul>
 		</form>
 	</div>
 	<div class="content_break"></div>
