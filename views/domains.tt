@@ -52,7 +52,31 @@
 		$("#confirm_action").dialog({
 			buttons: {
 				"Confirm": function () {
-					window.location.href = targetUrl
+					// window.location.href = targetUrl
+					$.ajax({
+						type: 'POST',
+						url: targetUrl,
+						dataType: 'json',
+						//data: {},
+						statusCode: {
+							404: handle_ajax_404,
+							500: handle_ajax_500,
+						},
+						error: handle_ajax_generic_error,
+						success: function (json) {
+							if (json.stat == 'ok') {
+								if (json.id) {
+									$('#row_domain_' + json.id).fadeOut();
+								}
+								$('#error_msg_ajax').fadeOut();
+								$('#confirm_action').dialog('destroy');
+							}
+							else {
+								$('#error_msg_txt_ajax').text(message);
+								$('#error_msg_ajax').fadeIn()
+							}
+						}
+					})
 				},
 				"Cancel": function () {
 					$(this).dialog("close")
@@ -489,7 +513,7 @@
 		[% ELSE %]
     			[% colour = 'table_formatter_color1' %]
 		[% END %]
- 			<tr>
+ 			<tr id="row_domain_[% domains.$id.id %]">
   				<td>
    					<div class="table_formatter table_formatter_domains ui-corner-all [% colour %]">
 						<a href="/domains/edit/records/id/[% domains.$id.id %]" id="domain_[% domains.$id.id %]">[% domains.$id.name %]</a>
