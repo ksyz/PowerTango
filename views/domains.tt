@@ -1,4 +1,21 @@
-<script> $(function () {
+<script> 
+	function handle_ajax_404() {
+		$('#error_msg_txt_ajax').text('Could not contact server');
+		$('#error_msg_ajax').fadeIn();
+	}
+
+	function handle_ajax_500() {
+		$('#error_msg_txt_ajax').text('A server-side error has occurred');
+		$('#error_msg_ajax').fadeIn();
+	}
+
+	function handle_ajax_generic_error() {
+		$('#error_msg_txt_ajax').text('A problem has occurred');
+		$('#error_msg_ajax').fadeIn();
+	}
+
+	$(function () {
+	
 	$('#nav_menu_domains').addClass('nav_menu_active');
 	$('input:submit, button').button();
 	$('img').tipTip({
@@ -113,19 +130,10 @@
 			data: record,
 			cache: false,
 			statusCode: {
-				404: function () {
-					$('#error_msg_txt_ajax').text('Could not contact server');
-					$('#error_msg_ajax').fadeIn()
-				},
-				500: function () {
-					$('#error_msg_txt_ajax').text('A server-side error has occurred');
-					$('#error_msg_ajax').fadeIn()
-				}
+				404: handle_ajax_404,
+				500: handle_ajax_500,
 			},
-			error: function () {
-				$('#error_msg_txt_ajax').text('A problem has occurred');
-				$('#error_msg_ajax').fadeIn()
-			},
+			error: handle_ajax_generic_error,
 			success: function (json) {
 				var id = json.id;
 				var stat = json.stat;
@@ -202,19 +210,10 @@
 			data: record,
 			cache: false,
 			statusCode: {
-				404: function () {
-					$('#error_msg_txt_ajax').text('Could not contact server');
-					$('#error_msg_ajax').fadeIn()
-				},
-				500: function () {
-					$('#error_msg_txt_ajax').text('A server-side error has occurred');
-					$('#error_msg_ajax').fadeIn()
-				}
+				404: handle_ajax_404,
+				500: handle_ajax_500,
 			},
-			error: function () {
-				$('#error_msg_txt_ajax').text('A problem has occurred');
-				$('#error_msg_ajax').fadeIn()
-			},
+			error: handle_ajax_generic_error,
 			success: function (json) {
 				var id = json.id;
 				var stat = json.stat;
@@ -263,23 +262,14 @@
 		$.ajax({
 			type: 'POST',
 			url: '/domains/add',
-			dataType: "json",
+			dataType: 'json',
 			data: record,
 			cache: false,
 			statusCode: {
-				404: function () {
-					$('#error_msg_txt_ajax').text('Could not contact server');
-					$('#error_msg_ajax').fadeIn()
-				},
-				500: function () {
-					$('#error_msg_txt_ajax').text('A server-side error has occurred');
-					$('#error_msg_ajax').fadeIn()
-				}
+				404: handle_ajax_404,
+				500: handle_ajax_500,
 			},
-			error: function () {
-				$('#error_msg_txt_ajax').text('A problem has occurred');
-				$('#error_msg_ajax').fadeIn()
-			},
+			error: handle_ajax_generic_error,
 			success: function (json) {
 				var id = json.id;
 				var stat = json.stat;
@@ -329,19 +319,10 @@
 			data: record,
 			cache: false,
 			statusCode: {
-				404: function () {
-					$('#error_msg_txt_ajax').text('Could not contact server');
-					$('#error_msg_ajax').fadeIn()
-				},
-				500: function () {
-					$('#error_msg_txt_ajax').text('A server-side error has occurred');
-					$('#error_msg_ajax').fadeIn()
-				}
+				404: handle_ajax_404,
+				500: handle_ajax_500,
 			},
-			error: function () {
-				$('#error_msg_txt_ajax').text('A problem has occurred');
-				$('#error_msg_ajax').fadeIn()
-			},
+			error: handle_ajax_generic_error,
 			success: function (json) {
 				var id = json.id;
 				var stat = json.stat;
