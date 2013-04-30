@@ -1,78 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Powerdns Tango</title>
-	<meta charset="UTF-8" />
+	<meta charset="utf-8">
+	<title>PowerTango</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="Powerdns Tango is a web frontend for powerdns written in the perl dancer framework. Designed to make DNS management simple, easy and as quick as possible." />
-	<meta name="keywords" content="powerdns, powerdns frontend, pdns frontend, dns, webapp, frontend, front-end, perl, sysadmin, system administration, system administrations, administration, domain, nameserver, spf, txt, cname, dns records" />
+	<meta name="author" content="Michal Ingeli <mi@v3.sk>" />
 	<meta name="author" content="Sarah Fuller - sarah@averna.id.au" />
 	<meta name="robots" content="index,follow" />
-	<link type="text/css" href="/css/main.prod.css" rel="stylesheet" />
-	<!--[if lte IE 7]>
-		<style>
-			#nav_menu_bg { margin-left: -324px; margin-top: 60px; }
-			#nav_menu li a { color: #ffffff; }
-			#mini_menu_bg { margin-top: -85px; }
-			#login_form { display: none; }
-			#logo_small { display: none; }
-			#signup_link { display: none; }
-		</style>
-	<![endif]-->
-	<script type="text/javascript" src="/javascripts/jquery-1.6.2.min.js"></script>
+
+	<link href="/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
+	<link href="/bootstrap/css/bootstrap-responsive.css" rel="stylesheet" media="screen">
+	
+	<!--<link type="text/css" href="/css/main.prod.css" rel="stylesheet" />-->
+	<!--<script type="text/javascript" src="/javascripts/jquery.tipTip.minified.js"></script>-->
+	<script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/javascripts/jquery-1.9.1.min.js"></script>
 	<script type="text/javascript" src="/javascripts/jquery-ui-1.8.16.custom.min.js"></script>
-	<script type="text/javascript" src="/javascripts/jquery.validate.js"></script>
-	<script type="text/javascript" src="/javascripts/jquery.tipTip.minified.js"></script>
+	<script type="text/javascript" src="/javascripts/jquery-validate.min.js"></script>
+
+	<style type="text/css">
+	body {
+		padding-top: 60px;
+		padding-bottom: 40px;
+	}
+    </style>
+
+	<link href="/css/custom.css" rel="stylesheet" media="screen">
 </head>
 <body>
-     <!-- header -->
-                <div id="header" class="ui-corner-tl ui-corner-tr">Powerdns <span>Tango</span>
-		[% IF session.logged_in %]
-                        <div id="menu">
-				<form method="post" action="/domains">
-				<ul>
-				   <li class="ui-corner-bl ui-corner-br"><span>Domain&nbsp;<input type="text" name="domain_search" maxlength="256" class="ui-corner-all"/>&nbsp;<input type="submit" value="Search" /></span></li>
-                                </ul>
-				</form>
-                        </div>
-		[% END %]
-			<div id="nav_menu_bg">
-        			<ul id="nav_menu">
-		[% IF session.logged_in %]
-        			   <li id="nav_menu_home" class="nav_menu_active_default ui-corner-tl ui-corner-tr"><a href="/">Home</a></li>
-				   <li id="nav_menu_domains" class="nav_menu_active_default ui-corner-tl ui-corner-tr"><a href="/domains">Domains</a></li>
-				   <li id="nav_menu_templates" class="nav_menu_active_default ui-corner-tl ui-corner-tr"><a href="/templates">Templates</a></li>
-				   <li id="nav_menu_account" class="nav_menu_active_default ui-corner-tl ui-corner-tr"><a href="/account">Account</a></li>
-		[% IF session.user_type == 'admin' %]
-				   <li id="nav_menu_supermasters" class="nav_menu_active_default ui-corner-tl ui-corner-tr"><a href="/supermasters">Supermasters</a></li>
-                                   <li id="nav_menu_admin" class="nav_menu_active_default ui-corner-tl ui-corner-tr"><a href="/admin">Admin</a></li>
-		[% END %]
-                                   <li id="nav_menu_logout" class="nav_menu_active_default ui-corner-tl ui-corner-tr"><a href="/logout">Logout</a></li>
-		[% END %]
-        			</ul>
+	<div class="navbar navbar-inverse navbar-fixed-top">
+		<div class="navbar-inner">
+			<div class="container">
+				<button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+
+				<a class="brand" href="/" title='Home of PowerTango'>DNS</a>
+
+				<div class="nav-collapse collapse">
+					<ul class="nav">
+					[% IF session.logged_in %]
+						<!--<li class="active"><a href="/">Home</a></li>-->
+						<li id="nav_menu_views"><a href="/views">Views</a></li>
+						<li><a href="/domains">Domains</a></li>
+						<li><a href="/templates">Templates</a></li>
+						<li class="dropdown">
+						[% IF session.user_type == 'admin' %]
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="/admin">Global Settings</a></li>
+								<li><a href="/admin">Default SOA</a></li>
+								<li class="divider"></li>
+								<li><a href="/users">Users</a></li>
+								<li><a href="/supermasters">Supermasters</a></li>
+							</ul>
+						</li>
+						[% END %]
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Me <b class="caret"></b></a>
+							<ul class='dropdown-menu'>
+								<li><a href="/account">Account</a></li>
+								<li><a href="/logout">Log Out</a></li>
+							</ul>
+						</li>
+					[% END %]
+					</ul>
+
+					[% IF session.logged_in %]
+					<form class="navbar-search pull-right" method='post' action='/domains'>
+						<input type="text" class="search-query" name="domain_search" placeholder="example.com">
+					</form>
+					<form class="navbar-form pull-right" method='post' action='/domains'>
+						<input class="span2" type="text" name="domain_search" placeholder="example.com">
+						<button type="submit">Search</button>
+					</form>
+					[% END %]
+
+					<ul class="nav pull-right">
+						<li><a href="/about">?</a></li>
+					</ul>
+				</div><!--/.nav-collapse -->
 			</div>
-                </div>
-     <!-- end header -->
-     <!-- content -->
-	<div id="wrapper" class="ui-corner-bl ui-corner-br">
-	  <div id="content">
-	   [% IF flash.message %]
-	   <div id="status_msg" class="flash_message flash ui-state-highlight ui-corner-all"><img src="/images/icons/accept.png" alt="Success" title="Success" /><span id="status_msg_txt">[% flash.message %]</span></div>
-	   [% END %]
-	   [% IF flash.error %]
-	   <div id="error_msg" class="flash_error flash ui-state-highlight ui-corner-all"><img src="/images/icons/exclamation.png" alt="Warning" title="Warning" /><span id="error_msg_txt">[% flash.error %]</span></div>
-	   [% END %]
-	   <div id="status_msg_ajax" class="flash_message flash ui-state-highlight ui-corner-all"><img src="/images/icons/accept.png" alt="Success" title="Success" /><span id="status_msg_txt_ajax"></span></div>
-	   <div id="error_msg_ajax" class="flash_error flash ui-state-highlight ui-corner-all"><img src="/images/icons/exclamation.png" alt="Warning" title="Warning" /><span id="error_msg_txt_ajax"></span></div>
-	   [% content %]
-	  </div>
+		</div>
 	</div>
-     <!-- end content -->
-     <!-- footer -->
-      <div id="footer">
-	<span><a href="https://github.com/averna-syd/PowerdnsTango">Powerdns Tango</a></span><span>&copy; 2011 <a href="mailto:sarah@averna.id.au">Sarah Fuller</a></span><br>
-	<span>Released under the <a href="http://www.gnu.org/licenses/gpl-3.0-standalone.html">GPLv3 license</a></span><br>
-      	<span>Powered by <a href="http://perldancer.org/">Dancer</a> [% dancer_version %]</span>
-      </div>
-    <!-- end Footer -->
-   </body>
+
+	<div class="container">
+		[% IF flash.message %]
+		<div class="row">
+			<div class="span9">
+				<div id="status_msg" class="text-info flash_message flash"><img src="/images/icons/accept.png" alt="Success" title="Success" /><span id="status_msg_txt">[% flash.message %]</span></div>
+			</div>
+		</div>
+		[% END %]
+		[% IF flash.error %]
+		<div class="row">
+			<div class="span9">
+			   <div id="error_msg" class="text-error flash_error flash"><img src="/images/icons/exclamation.png" alt="Warning" title="Warning" /><span id="error_msg_txt">[% flash.error %]</span></div>
+			</div>
+		</div>
+		[% END %]
+		<div class="row">
+			<div class="span9">
+				<div id="status_msg_ajax" class="flash_message flash display_hidden"><img src="/images/icons/accept.png" alt="Success" title="Success" /><span id="status_msg_txt_ajax"></span></div>
+				<div id="error_msg_ajax" class="flash_error flash display_hidden"><img src="/images/icons/exclamation.png" alt="Warning" title="Warning" /><span id="error_msg_txt_ajax"></span></div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- content -->
+	[% content %]
+	<!-- end content -->
+
+	<!-- Should be placed at the end of the document so the pages load faster -->
+	<script type="text/javascript" src="/bootstrap/js/bootstrap-transition.js"></script>
+	<script type="text/javascript" src="/bootstrap/js/bootstrap-alert.js"></script>
+	<script type="text/javascript" src="/bootstrap/js/bootstrap-modal.js"></script>
+	<script type="text/javascript" src="/bootstrap/js/bootstrap-dropdown.js"></script>
+	<script type="text/javascript" src="/bootstrap/js/bootstrap-scrollspy.js"></script>
+	<script type="text/javascript" src="/bootstrap/js/bootstrap-tab.js"></script>
+	<script type="text/javascript" src="/bootstrap/js/bootstrap-tooltip.js"></script>
+	<script type="text/javascript" src="/bootstrap/js/bootstrap-popover.js"></script>
+	<script type="text/javascript" src="/bootstrap/js/bootstrap-button.js"></script>
+	<script type="text/javascript" src="/bootstrap/js/bootstrap-collapse.js"></script>
+	<script type="text/javascript" src="/bootstrap/js/bootstrap-carousel.js"></script>
+	<script type="text/javascript" src="/bootstrap/js/bootstrap-typeahead.js"></script>
+</body>
 </html>

@@ -1,0 +1,9 @@
+	<!-- footer -->
+	<div id="footer" class="container"><small>
+		<p class="text-center"><a href="https://github.com/ksyz/PowerTango">PowerTango</a></span><span><!--[if lte IE 8]><span style="filter: FlipH; -ms-filter: "FlipH"; display: inline-block;"><![endif]--><span style="-moz-transform: scaleX(-1); -o-transform: scaleX(-1); -webkit-transform: scaleX(-1); transform: scaleX(-1); display: inline-block;">&copy;</span><!--[if lte IE 8]></span><![endif]--> 2013 <a href="mailto:mi@v3.sk">Michal Ingeli</a><br />
+		<a href="https://github.com/averna-syd/PowerdnsTango">Powerdns Tango</a></span><span>&copy; 2011 <a href="mailto:sarah@averna.id.au">Sarah Fuller</a><br />
+		Released under the <a href="http://www.gnu.org/licenses/gpl-3.0-standalone.html">GPLv3 license</a><br />
+		Powered by <a href="http://perldancer.org/">Dancer</a> [% dancer_version %]<br />
+		</small>
+	</div>
+	<!-- end Footer -->

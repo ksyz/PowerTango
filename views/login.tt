@@ -7,34 +7,25 @@
 			password: 'required',
 		},
 	})
-}); </script>
-<span class="page_title">Login</span>
-[% IF account_signup == 'enabled' || account_signup == 'admin' %]
-	<span id="signup_link"><a href="/signup">Sign up now</a></span>
-[% END %]
-<div class="line_break"></div>
-<div class="content_break"></div>
-<!--[if lte IE 7]>
-<span id="ie_warning">This version of Internet Explorer is not supported. Please upgrade to Internet Explorer 8 or above.</span>
-<![endif]-->
-<form id="login_form" method="post" action="/login">
-   <ul class="form ui-corner-all">
-         <li id="login">
-                  <label>Username</label>
-                  <input name="login" type="text" maxlength="30" class="ui-corner-all" />
-          </li>
-          <li id="password">
-                  <label>Password</label>
-                  <input name="password" type="password" maxlength="30" class="ui-corner-all" />
-          </li>
-          <li id="submit">
-                  <input type="submit" value="Login"/>
-          </li>
-	[% IF recover_password == 1 %]
-	  <li>
+});
+</script>
+
+<link href="/css/login.css" rel="stylesheet" media="screen">
+
+<div class="container">
+	<form id="login_form" class="form-signin" method="post" action="/login">
+		<h2 class="form-signin-heading">Please Log In</h2>
+		<input type="text" class="input-block-level" placeholder="Email address" name="login" />
+		<input type="password" class="input-block-level" placeholder="Password" name="password" />
+		<!--<label class="checkbox">
+			<input type="checkbox" value="remember-me"> Remember me
+		</label>-->
+		<button class="btn btn-large btn-primary" type="submit">Log In</button><br />
+		[% IF recover_password == 1 %]
 		<a href="/password/recover">Forgotten your password?</a>
-	  </li>
-	[% END %]
-    </ul>
-</form>
-<div id="logo_small"><img src="/images/logo_small.png" alt="logo" title="meow" /></div>
+		[% END %]
+		[% IF account_signup == 'enabled' || account_signup == 'admin' %]
+		<span id="signup_link"><a href="/signup">Sign up</a></span>
+		[% END %]
+	</form>
+</div>
