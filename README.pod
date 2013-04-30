@@ -1,5 +1,34 @@
 =pod
 
+=head1 ATTENTION
+
+This fork is not suitable for any kind of production environment. Maybe not even development (yet). 
+For now, planed features are:
+
+=over 2
+
+=item *
+
+bind9 support
+
+=item *
+
+bind9 views support
+
+=item *
+
+bind9 configuration generators and dlz/files support
+
+=item *
+
+fixing domain level acl
+
+=item *
+
+bootstrap html interface
+
+=back
+
 =head1 Powerdns Tango
 
 Powerdns Tango is a simple web frontend for powerdns written in the perl dancer framework.
