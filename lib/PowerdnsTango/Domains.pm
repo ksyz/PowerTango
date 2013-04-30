@@ -2,6 +2,7 @@ package PowerdnsTango::Domains;
 use Dancer ':syntax';
 use Dancer::Plugin::Database;
 use Dancer::Plugin::FlashMessage;
+use Dancer::Plugin::Res;
 use Dancer::Session::Storable;
 use Dancer::Template::TemplateToolkit;
 use Dancer::Plugin::Ajax;
@@ -10,6 +11,8 @@ use Data::Page;
 use Data::Validate::IP qw(is_ipv4 is_ipv6);
 use PowerdnsTango::Acl qw(user_acl);
 use PowerdnsTango::Validate::Records qw(check_valid_masters is_domain);
+use strict;
+use warnings;
 
 our $VERSION = '0.3';
 
@@ -105,10 +108,12 @@ any ['get', 'post'] => '/domains' => sub {
 	});
 };
 
-ajax '/domains/add' => sub {
+# any [ 'get', 'post' ] => '/domains/add' => sub {
+# ajax '/domains/add' => sub {
+post '/domains/add' => sub {
 	my $domain = params->{add_domain_name} || 0;
 	my $type = params->{add_domain_type} || 0;
-	my $master = params->{add_master_addr};
+	my $master = params->{add_master_addr} || '';
 	my $template_id = params->{add_domain_template} || 0;
 	my $user_type = session 'user_type';
 	my $user_id = session 'user_id';
@@ -121,8 +126,11 @@ ajax '/domains/add' => sub {
 	$master =~ s/\s//g 
 		if (defined $master);
 
-	return { stat => 'fail', message => "Invalid domain name"}
-		unless is_domain($domain);
+	unless (is_domain($domain)) {
+		# status 400;
+		# return { stat => 'fail', message => "Invalid domain name"};
+		return res 400 => to_json { stat => 'fail', message => "Invalid domain name"};
+	}
 
 	unless ($user_type eq 'admin') {
 		my $user_domain_limit = database->quick_select('users_tango', { id => $user_id });
@@ -130,13 +138,13 @@ ajax '/domains/add' => sub {
 		$sth->execute($user_id);
 		my $owned_domains = $sth->fetchrow_hashref;
 
-		return {
+		return res 404 => {
 			stat => 'fail',
 			message => "You have reached your domain limit of $user_domain_limit->{domain_limit}"
 		} if ($owned_domains->{count} >= $user_domain_limit->{domain_limit});
 	}
 
-	return { stat => 'fail', message => "Domain $domain already exists"}
+	return res 409 => { stat => 'fail', message => "Domain $domain already exists"}
 		if database->quick_lookup('domains', {'name' => $domain}, 'id');
 
 	my $domain_id = undef; # ID of new domain
@@ -147,7 +155,7 @@ ajax '/domains/add' => sub {
 	}
 	elsif ($type eq 'SLAVE') {
 		# checking for valid list of masters (check also rewrites value)
-		return { stat => 'fail', 
+		return res 400 => { stat => 'fail', 
 			message => "A vaild master address or list of ".
 				"comma separated master addresses must be provided" 
 		} unless check_valid_masters(\$master);
@@ -159,12 +167,12 @@ ajax '/domains/add' => sub {
 
 	if ($success) {
 		$domain_id = database->last_insert_id(undef, undef, 'domains', 'id');
-		return { stat => 'fail', message => 'last_insert_id failed' }
+		return 501 => { stat => 'fail', message => 'last_insert_id failed' }
 			unless defined $domain_id;
 		database->quick_insert('domains_acl_tango', { user_id => $user_id, domain_id => $domain_id });
 	}
 	else {
-		return { stat => 'fail', message => 'Domain insert query failed' };
+		return 501 => { stat => 'fail', message => 'Domain insert query failed' };
 	}
 
 	if ($type ne 'SLAVE' && $success) {
@@ -205,7 +213,7 @@ ajax '/domains/add' => sub {
 		}
 	}
 
-	return {
+	return res 200 => {
 		stat => 'ok',
 		id => $domain_id,
 		message => "Domain $domain added",
@@ -391,7 +399,7 @@ ajax '/domains/update' => sub {
 	return { stat => 'fail', message => 'Invalid domain name' }
 		unless is_domain($domain);
 
-	my $domain_exists = database->quick_lookup('domain', {name => $domain}, 'name');
+	my $domain_exists = database->quick_lookup('domains', {name => $domain}, 'name');
 	my $old_domain = database->quick_select('domains', {id => $id});
 
 	if (defined $domain_exists and defined $old_domain and $old_domain->{name} ne $domain) {

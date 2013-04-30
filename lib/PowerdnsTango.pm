@@ -2,8 +2,10 @@ package PowerdnsTango;
 use Dancer ':syntax';
 use Dancer::Plugin::Database;
 use Dancer::Plugin::FlashMessage;
+use Dancer::Plugin::Res;
 use Dancer::Session::Storable;
 use Dancer::Template::TemplateToolkit;
+use Dancer::Exception qw(:all);
 use Crypt::SaltedHash;
 use PowerdnsTango::Home;
 use PowerdnsTango::Domains;
@@ -16,11 +18,11 @@ use PowerdnsTango::Account;
 use PowerdnsTango::Admin;
 use PowerdnsTango::Admin::Account;
 use PowerdnsTango::Signup;
+use PowerdnsTango::Views;
+use PowerdnsTango::Views::Config;
 use PowerdnsTango::Acl qw(user_acl);
 use PowerdnsTango::Validate::Records qw(check_soa check_record calc_serial);
- 
 our $VERSION = '0.3';
-
 
 hook before => sub {
 	if (! session('logged_in') && (request->path_info !~ m{^/login} && request->path_info !~ m{^/password} && request->path_info !~ m{^/signup} )) {
@@ -82,7 +84,7 @@ any ['get', 'post'] => '/login' => sub
 				else
 				{
 					session->destroy;
-                        		session 'logged_in' => true;
+					session 'logged_in' => true;
 					session 'user_id' => $data->{id};
 					session 'user_login' => $data->{login};
 					session 'user_name' => $data->{name};
@@ -119,6 +121,9 @@ get '/logout' => sub
         redirect '/';
 };
 
+get '/about' => sub {
+	template 'about.tt'
+};
 
 any qr{.*} => sub
 {
@@ -128,5 +133,16 @@ any qr{.*} => sub
         template '404', { path => request->path };
 };
 
+register_exception('InvalidArgument',
+	message_pattern => "Invalid Argument: %s"
+);
+
+register_exception('ObjectNotFound',
+	message_pattern => "Object not found: %s"
+);
+
+register_exception('ObjectAlreadyExists',
+	message_pattern => "Object already exists: %s"
+);
 
 true;

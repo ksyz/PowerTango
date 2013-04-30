@@ -6,7 +6,7 @@ use Scalar::Util qw(looks_like_number);
 
 use base "Exporter";
 
-our @EXPORT = qw(user_acl);
+our @EXPORT = qw(user_acl user_id is_admin);
 our $VERSION = '0.1';
 
 
@@ -32,6 +32,9 @@ sub user_acl {
 	elsif ($obj_type eq 'template') {
 		$acl = database->prepare("SELECT COUNT(id) AS count FROM templates_acl_tango WHERE template_id = ? AND user_id = ?");
 	}
+	elsif ($obj_type eq 'acl') {
+		$acl = database->prepare("SELECT COUNT(id) AS count FROM pt_views_acl WHERE view_id = ? AND user_id = ?");
+	}
 	else {
 		# this is more severe, as we probably did som type there
 		die 'Invalid ACL object type';
@@ -45,5 +48,13 @@ sub user_acl {
 
 	return 1;
 };
+
+sub is_admin {
+	return session('user_type') eq 'admin' ? 1 : 0;
+}
+
+sub user_id {
+	return session 'user_id';
+}
 
 1;

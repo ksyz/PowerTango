@@ -1,0 +1,363 @@
+<script>
+
+function _add_view_config(view_id, config_key, config_value) {
+	$.ajax({
+		type: 'POST',
+		//url: '/views/' + $('#add_view_config_button').attr('edit') + '/config',
+		url: '/views/' + view_id + '/config',
+		dataType: 'json',
+		data: {
+			//config_key: $('#config_key').val(),
+			//config_value: $('#config_value').val(),
+			config_key: config_key,
+			config_value: config_value,
+		},
+		success: function (json) {
+			var id = json.id;
+			$('#error_msg_ajax').fadeOut();
+
+			if ($('#row_config_'+id).length) {
+				$('#value_view_config_'+id+' div').text(json.value);
+			}
+			else {
+				$('#view_config_table tbody').append('<tr id="row_config_' + id + '" config_id="' + id + '" view_id="' + json.view_id + '">' +
+					'<td><div class="editable" id="config_key_' + id +'>' + json.key + '</div></td>' +
+					'<td><div class="editable" id="config_value_' + id +'>' + json.value + '</div></td>' +
+				'<td>' +
+					'<div class="btn-group editable_controls" id="controls_view_config_' + id + '" mode="read">' +
+						'<a href="#" class="btn btn-mini edit_view_config_button" alt="Edit" title="Edit" /><i class="icon-pencil"></i></a>' +
+						'<a href="#" class="btn btn-mini btn-danger delete_view_config_button" alt="Delete" title="Delete" /><i class="icon-trash icon-white" /></i></a>' +
+					'</div>' +
+					'<div class="btn-group editable_controls hide" id="controls_view_config_' + c.id + '" mode="read">' +
+						'<a href="#" class="btn btn-mini cancel_view_config_button" alt="Cancel" title="Cancel" /><i class="icon-ban-circle"></i></a>' +
+						'<a href="#" class="btn btn-mini btn-primary save_view_config_button" alt="Save" title="Save" /><i class="icon-ok icon-white"></i></a>' +
+					'</div>' +
+				'</td>' +
+					'</tr>');
+			}
+		}
+	});
+}
+
+$(function() {
+	$('#nav_menu_views').addClass('active');
+
+	$('.editable').each(function(i) {
+		var e = $(this);
+		var data = e.text();
+		var id = e.attr('id');
+		var type = e.attr('type');
+		var input = '';
+
+		if (type == 'checkbox') {
+			// TODO handle multiple values
+			input = '<input id="' + id + '_field" name="' + id + '_field" type="checkbox" value="' + data + '" ' + (data != '' ? 'checked' : '' ) + '/></div>';
+		}
+		else {
+			input = '<input id="' + id + '_field" name="' + id + '_field" type="text" value="' + data + '" /></div>';
+		}
+
+		e.empty();
+
+		e.append('<div class="editable_data" id="' + id + '_data">' + data + '</div>');
+		e.append('<div class="hide editable_input">' + input + '</div>');
+	});
+
+	$("#add_view_config_dialog").dialog({
+		autoOpen: false,
+		height: 400,
+		width: 400,
+		modal: true,
+		open: function(event, ui) {
+			var source = $(this).data('source');
+			if (source) {
+				var config_id = source.attr('edit');
+				$('#key_view_config_'+config_id).prop('disabled', true);
+				var config_key = $('#edit_view_config_key_' + config_id).val();
+				var config_value = $('#edit_view_config_value_' + config_id).val();
+				console.log(config_key);
+				console.log(config_value);
+				$('#config_key').val(config_key);
+				$('#config_value').val(config_value);
+			}
+		},
+		buttons: {
+			"Save": function() {
+				_add_view_config($('#add_view_config_button').attr('edit'), $('#config_key').val(), $('#config_value').val());
+				$( this ).dialog( "close" );
+			},
+			Cancel: function() {
+				$( this ).dialog( "close" );
+			}
+		},
+		close: function() {}
+	});
+
+	$("#delete_view_config_dialog").dialog({
+		autoOpen: false,
+		height: 300,
+		width: 350,
+		modal: true,
+		buttons: {
+			"Delete": function() {
+				var source = $(this).data('source');
+				$.ajax({
+					type: 'POST',
+					url: '/views/' + source.attr('view_id') + '/config/' + source.attr('delete') + '/delete',
+					dataType: 'json',
+					data: {
+						id: source.attr('view_id'),
+						config_id: source.attr('delete'),
+					},
+					success: function (json) {
+						var id = json.id;
+						$('#error_msg_ajax').fadeOut();
+						$('#row_config_'+id).remove();
+						reformat_tables();
+					}
+				});
+				$( this ).dialog( "close" );
+			},
+			Cancel: function() {
+				$( this ).dialog( "close" );
+			}
+		},
+		close: function() {}
+	});
+
+	$("#add_view_config_button").click(function(e) {
+		e.preventDefault();
+		$( "#add_view_config_dialog" ).dialog( "open" );
+	});
+	$(".delete_view_config_button").click(function(e) {
+		e.preventDefault();
+		$("#delete_view_config_dialog").data('source', $(this)).dialog("open");
+	});
+	//$(".edit_view_config_button").click(function(e) {
+	//	e.preventDefault();
+	//	$("#add_view_config_dialog").data('source', $(this)).dialog("open");
+	//});
+
+	$("#save_view_config_button").click(function(e) {
+		e.preventDefault();
+
+		$.ajax({
+			type: 'POST',
+			url: $('#add_view_config_form').attr('action'),
+			dataType: 'json',
+			data: {
+				config_key: $('#config_key').val(),
+				config_value: $('#config_value').val(),
+			},
+			success: function (json) {
+				var id = json.id;
+				$('#list_view_config_table tbody').append("<tr id='row_config_" + json.id + "'>" +
+				"<td id='key_view_config_" + id + "'>" +
+					"<span id='view_config_key_[% c.id %]'>" + json.key + "</span>" +
+					"<span class='hide'><input id='edit_view_config_key_" + id + "' name='edit_name' type='text' maxlength='255' value='"+ json.key +"' /></span>" +
+				"<td id='value_view_config_" + id + "'>" +
+					"<span id='view_config_value_[% c.id %]'>" + json.value + "</span>" +
+					"<span class='hide'><input id='edit_view_config_value_" + id + "' name='edit_name' class='hide' type='text' maxlength='255' value='"+ json.value +"' /></span>" +
+				"<td></td>" +
+				"</tr>");
+				$('#add_view_config_block').fadeToggle();
+			}
+		});
+	});
+	$('#add_view_config_form').validate({
+		rules: {
+			config_value: 'required',
+			config_key: 'required',
+		},
+	});
+
+	$('#add_view_config_menu_button').click(function(e) { e.preventDefault(); $('#add_view_config_block').fadeToggle(); if ($('#add_view_config_block').is(':visible')) { $('#add_view_config_block').focus(); } });
+	$('#cancel_add_view_config_button').click(function(e) { e.preventDefault(); $('#add_view_config_block').fadeToggle(); });
+	
+	$('#edit_view_menu_button').click(function(e) {
+		e.preventDefault();
+		$('#update_view_form * .editable_data').hide();
+		$('#update_view_form * .editable_input').show();
+		$(".btn-group[for=update_view_form][mode=write]").show();
+		$(".btn-group[for=update_view_form][mode=read]").hide();
+	});
+	$('#cancel_view_menu_button').click(function(e) {
+		e.preventDefault();
+		$('#update_view_form * .editable_data').show();
+		$('#update_view_form * .editable_input').hide();
+		$('.btn-group[for=update_view_form][mode=write]').hide();
+		$('.btn-group[for=update_view_form][mode=read]').show();
+	});
+	$('#save_view_menu_button').click(function(e) {
+		e.preventDefault();
+		var target = $('#update_view_form').attr('action');
+
+		$.ajax({
+					type: 'POST',
+					url: target,
+					dataType: 'json',
+					data: {
+						view_name: $('#view_name_field').val(),
+						view_clients: $('#view_clients_field').val(),
+						view_destinations: $('#view_destinations_field').val(),
+						view_recursive_only: $('#view_recursive_only_field').val(),
+					},
+					success: function (json) {
+						$('#error_msg_ajax').fadeOut();
+						var id = json.id;
+						for (var k in json) {
+							if (json.hasOwnProperty(k)) {
+								console.log(k, json[k]);
+							}
+						}
+						$('#status_msg_txt_ajax').text(json.message);
+						$('#status_msg_txt_ajax').fadeIn();
+					},
+				});
+	});
+
+	$('.edit_view_config_button').click(function(e) {
+		e.preventDefault();
+		var button = $(this);
+		var data_row = button.closest('tr');
+		var view_id = data_row.attr('view_id');
+		var config_id = data_row.attr('config_id');
+
+		data_row.find('.editable_data, .editable_input, .editable_controls').toggle();
+		console.log('View: ' + view_id + ' Config: ' + config_id);
+	});
+	$('.cancel_view_config_button').click(function(e) {
+		e.preventDefault();
+		var button = $(this);
+		var data_row = button.closest('tr');
+		data_row.find('.editable_data, .editable_input, .editable_controls').toggle();
+	});
+});
+
+</script>
+
+<div class="container" id="title_view_block">
+<h2>View: <em>[% v.name %]</em></h2>
+</div>
+
+<div class="container" id="control_view_block">
+<div class="row">
+	<div class="btn-toolbar">
+		<div class="btn-group">
+			<a class="btn" id="config_view_menu_button" href="#"><i class="icon-wrench"></i> Configuration</a>
+			<a class="btn" id="domains_view_menu_button" href="#"><i class="icon-list"></i> Domains</a>
+			<a class="btn" id="users_view_menu_button" href="#"><i class="icon-user"></i> Users</a>
+		</div>
+		<div class="btn-group pull-right" for='update_view_form' mode='read'>
+			<a class="btn" id="edit_view_menu_button" href="#"><i class="icon-pencil"></i> Edit</a>
+			<a class="btn btn-danger" id="delete_view_menu_button" href="#"><i class="icon-trash icon-white"></i> Delete</a>
+		</div>
+		<div class="btn-group pull-right hide" for='update_view_form' mode='write'>
+			<a class="btn" id="cancel_view_menu_button" href="#"><i class="icon-ban-circle"></i> Cancel</a>
+			<a class="btn btn-primary" id="save_view_menu_button" href="#"><i class="icon-ok icon-white"></i> Save</a>
+		</div>
+	</div>
+</div>
+</div>
+<script>
+
+</script>
+
+<div class="container" id="info_view_block">
+<div class="row">
+	<form id="update_view_form" method="post" action="/views/[% v.id %]/update">
+	<table class="table">
+	<tbody>
+		<tr>
+			<td>Name</td>
+			<td>
+				<div class="editable" id="view_name">[% v.name %]</div>
+			</td>
+		</tr>
+		<tr>
+			<td>Clients</td>
+			<td>
+				<div class="editable" id="view_clients">[% v.clients %]</div>
+			</td>
+		</tr>
+		<tr>
+			<td>Destinations</td>
+			<td>
+				<span class="editable" id="view_destinations">[% v.destinations %]</span>
+			</td>
+		</tr>
+		<tr>
+			<td>Recursive Only</td>
+			<td>
+				<span class="editable" id="view_recursive_only" type="checkbox">[% v.recursive_only %]</span>
+			</td>
+		</tr>
+	</tbody>
+	</table>
+	</form>
+</div>
+</div>
+
+<div class="container hide" id="add_view_config_block">
+<div class="row">
+    <form action="/views/[% v.id %]/config" method="post" id="add_view_config_form"><fieldset>
+		<legend>Add configuration key/value</legend>
+		<label for="config_key">Configuration key</label>
+		<input type="text" class="input-xlarge" placeholder="" name="config_key" id="config_key" />
+		<span class="help-inline">Valid name contains [a-z0-9-]</span>
+
+		<label for="config_value">Configuration value</label>
+		<textarea name="config_value" value="" rows="5" class="input-xxlarge" id="config_value" ></textarea>
+		<span class="help-block">Any value will do</span>
+
+		<button type="submit" class="btn btn-primary" id="save_view_config_button">Save</button>
+		<a href="#" class="btn" id="cancel_add_view_config_button">Cancel</a>
+	</fieldset></form>
+</div>
+</div>
+
+<div class="container" id="list_view_config_block">
+<div class="row">
+	<h3>Configuration</h3>
+</div>
+<div class="row">
+	<div class="btn-group pull-right">
+		<a class="btn" id="add_view_config_menu_button" href="#"><i class="icon-plus"></i> Add</a>
+		<a class="btn disabled" id="reload_view_config_menu_button" href="#"><i class="icon-refresh"></i> Reload</a>
+	</div>
+</div>
+<div class="row">
+	<table class="table table-striped table-hover" id="list_view_config_table">
+		<thead>
+			<tr>
+				<th>Key</th>
+				<th>Value</th>
+				<th class="table_col_controls">Controls</th>
+			</tr>
+		</thead>
+		<tbody>
+		[% FOREACH c IN config %]
+			<tr id="row_config_[% c.id %]" config_id="[% c.id %]" view_id="[% v.id %]">
+				<td>
+					<div class="editable" id="config_key_[% c.id %]">[% c.key %]</div>
+				</td>
+				<td>
+					<div class="editable" id="config_value_[% c.id %]">[% c.value %]</div>
+				</td>
+				<td>
+					<div class="btn-group editable_controls" id='controls_view_config_[% c.id %]' mode='read'>
+						<a href="#" class="btn btn-mini edit_view_config_button" alt="Edit" title="Edit" /><i class="icon-pencil"></i></a>
+						<a href="#" class="btn btn-mini btn-danger delete_view_config_button" alt="Delete" title="Delete" /><i class="icon-trash icon-white" /></i></a>
+					</div>
+					<div class="btn-group editable_controls hide" id='controls_view_config_[% c.id %]' mode='read'>
+						<a href="#" class="btn btn-mini cancel_view_config_button" alt="Cancel" title="Cancel" /><i class="icon-ban-circle"></i></a>
+						<a href="#" class="btn btn-mini btn-primary save_view_config_button" alt="Save" title="Save" /><i class="icon-ok icon-white"></i></a>
+					</div>
+				</td>
+			</tr>
+		[% END %]
+		</tbody>
+		</table>
+	</div>
+</div>
+
