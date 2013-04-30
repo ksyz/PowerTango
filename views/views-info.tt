@@ -51,7 +51,7 @@ $(function() {
 
 		if (type == 'checkbox') {
 			// TODO handle multiple values
-			input = '<input id="' + id + '_field" name="' + id + '_field" type="checkbox" value="' + data + '" ' + (data != '' ? 'checked' : '' ) + '/></div>';
+			input = '<input id="' + id + '_field" name="' + id + '_field" type="checkbox" value="' + e.attr('expect') + '" ' + (data == e.attr('expect') ? 'checked' : '' ) + '/></div>';
 		}
 		else {
 			input = '<input id="' + id + '_field" name="' + id + '_field" type="text" value="' + data + '" /></div>';
@@ -188,32 +188,50 @@ $(function() {
 		$('.btn-group[for=update_view_form][mode=write]').hide();
 		$('.btn-group[for=update_view_form][mode=read]').show();
 	});
+
 	$('#save_view_menu_button').click(function(e) {
 		e.preventDefault();
 		var target = $('#update_view_form').attr('action');
 
 		$.ajax({
-					type: 'POST',
-					url: target,
-					dataType: 'json',
-					data: {
-						view_name: $('#view_name_field').val(),
-						view_clients: $('#view_clients_field').val(),
-						view_destinations: $('#view_destinations_field').val(),
-						view_recursive_only: $('#view_recursive_only_field').val(),
-					},
-					success: function (json) {
-						$('#error_msg_ajax').fadeOut();
-						var id = json.id;
-						for (var k in json) {
-							if (json.hasOwnProperty(k)) {
-								console.log(k, json[k]);
+			type: 'POST',
+			url: target,
+			dataType: 'json',
+			data: {
+				view_name: $('#view_name_field').val(),
+				view_clients: $('#view_clients_field').val(),
+				view_destinations: $('#view_destinations_field').val(),
+				view_recursive_only: ($('#view_recursive_only_field').is(':checked') ? 'YES' : 'NO'),
+			},
+			success: function (json) {
+				$('#error_msg_ajax').fadeOut();
+				var id = json.id;
+				var form = $('#update_view_form');
+				for (var k in json) {
+					if (json.hasOwnProperty(k)) {
+						var field = form.find('#view_'+k+'_field');
+						field.val(json[k]);
+						if (field.attr('type') == 'checkbox') {
+							if (json[k] == 'YES') {
+								field.prop('checked', true);
+							}
+							else {
+								field.prop('checked', false);
 							}
 						}
-						$('#status_msg_txt_ajax').text(json.message);
-						$('#status_msg_txt_ajax').fadeIn();
-					},
-				});
+						form.find('#view_'+k+'_data').text(json[k]);
+						console.log(k, json[k]);
+					}
+				}
+				$('#update_view_form * .editable_data').show();
+				$('#update_view_form * .editable_input').hide();
+				$('.btn-group[for=update_view_form][mode=write]').hide();
+				$('.btn-group[for=update_view_form][mode=read]').show();
+				
+				$('#status_msg_txt_ajax').text(json.message);
+				$('#status_msg_txt_ajax').fadeIn();
+			},
+		});
 	});
 
 	$('.edit_view_config_button').click(function(e) {
@@ -289,7 +307,7 @@ $(function() {
 		<tr>
 			<td>Recursive Only</td>
 			<td>
-				<span class="editable" id="view_recursive_only" type="checkbox">[% v.recursive_only %]</span>
+				<span class="editable" id="view_recursive_only" type="checkbox" expect='YES'>[% v.recursive_only %]</span>
 			</td>
 		</tr>
 	</tbody>

@@ -79,13 +79,13 @@ post '/:id/update' => sub {
 		name => params->{view_name},
 		clients => params->{view_clients} || '',
 		destinations => params->{view_destinations} || '',
-		recursive_only => params->{view_recursive_only} || 0,
+		recursive_only => params->{view_recursive_only} || 'NO',
 	};
 
 	try {
 		my $view_id = _update_view($view_id, $view);
 		
-		return res 200 => { message => "View updated", id => $view_id }
+		return res 200 => { message => "View updated", id => $view_id, %{$view} }
 			if request->is_ajax;
 		flash message => "View updated";
 		return redirect '/views/'.$view_id;
@@ -187,6 +187,9 @@ sub _update_view {
 
 	raise 'InvalidArgument' => "Expected integer view_id"
 		unless (looks_like_number($view_id));
+		
+	raise 'InvalidArgument' => "Invalid recursive_only value (YES/NO)"
+		unless ($view->{recursive_only} =~ /^(YES|NO)$/i);
 
 	my $old_view = database->quick_select('pt_views', { id => $view_id });
 
