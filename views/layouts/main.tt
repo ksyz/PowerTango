@@ -13,20 +13,20 @@
 	<link href="/bootstrap/css/bootstrap-responsive.css" rel="stylesheet" media="screen">
 	
 	<!--<link type="text/css" href="/css/main.prod.css" rel="stylesheet" />-->
-	<!--<script type="text/javascript" src="/javascripts/jquery.tipTip.minified.js"></script>-->
 	<script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="/javascripts/jquery-1.9.1.min.js"></script>
-	<script type="text/javascript" src="/javascripts/jquery-ui-1.8.16.custom.min.js"></script>
+	<script type="text/javascript" src="/jquery-ui/ui/jquery-ui.js"></script>
 	<script type="text/javascript" src="/javascripts/jquery-validate.min.js"></script>
+	<script type="text/javascript" src="/javascripts/jquery.tipTip.minified.js"></script>
 
 	<style type="text/css">
 	body {
 		padding-top: 60px;
 		padding-bottom: 40px;
 	}
-    </style>
+	</style>
 
-	<link href="/css/custom.css" rel="stylesheet" media="screen">
+	<link type="text/css" href="/css/custom.css" rel="stylesheet" media="screen">
 </head>
 <body>
 	<div class="navbar navbar-inverse navbar-fixed-top">
@@ -38,15 +38,13 @@
 					<span class="icon-bar"></span>
 				</button>
 
-				<a class="brand" href="/" title='Home of PowerTango'>DNS</a>
+				<a class="brand" href="/" id="nav_menu_home" title='Home of PowerTango'>DNS</a>
 
 				<div class="nav-collapse collapse">
 					<ul class="nav">
 					[% IF session.logged_in %]
-						<!--<li class="active"><a href="/">Home</a></li>-->
-						<li id="nav_menu_views"><a href="/views">Views</a></li>
-						<li><a href="/domains">Domains</a></li>
-						<li><a href="/templates">Templates</a></li>
+						<li id="nav_menu_domains"><a href="/domains">Domains</a></li>
+						<li id="nav_menu_templates"><a href="/templates">Templates</a></li>
 						<li class="dropdown">
 						[% IF session.user_type == 'admin' %]
 						<li class="dropdown">
@@ -74,10 +72,6 @@
 					<form class="navbar-search pull-right" method='post' action='/domains'>
 						<input type="text" class="search-query" name="domain_search" placeholder="example.com">
 					</form>
-					<form class="navbar-form pull-right" method='post' action='/domains'>
-						<input class="span2" type="text" name="domain_search" placeholder="example.com">
-						<button type="submit">Search</button>
-					</form>
 					[% END %]
 
 					<ul class="nav pull-right">
@@ -90,25 +84,13 @@
 
 	<div class="container">
 		[% IF flash.message %]
-		<div class="row">
-			<div class="span9">
-				<div id="status_msg" class="text-info flash_message flash"><img src="/images/icons/accept.png" alt="Success" title="Success" /><span id="status_msg_txt">[% flash.message %]</span></div>
-			</div>
-		</div>
+		<div id="status_msg" class="text-info flash_message flash alert alert-success"><button type="button" class="close" data-dismiss="alert">&times;</button><span id="status_msg_txt">[% flash.message %]</span></div>
 		[% END %]
 		[% IF flash.error %]
-		<div class="row">
-			<div class="span9">
-			   <div id="error_msg" class="text-error flash_error flash"><img src="/images/icons/exclamation.png" alt="Warning" title="Warning" /><span id="error_msg_txt">[% flash.error %]</span></div>
-			</div>
-		</div>
+		<div id="error_msg" class="text-error flash_error flash alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><span id="error_msg_txt">[% flash.error %]</span></div>
 		[% END %]
-		<div class="row">
-			<div class="span9">
-				<div id="status_msg_ajax" class="flash_message flash display_hidden"><img src="/images/icons/accept.png" alt="Success" title="Success" /><span id="status_msg_txt_ajax"></span></div>
-				<div id="error_msg_ajax" class="flash_error flash display_hidden"><img src="/images/icons/exclamation.png" alt="Warning" title="Warning" /><span id="error_msg_txt_ajax"></span></div>
-			</div>
-		</div>
+		<div id="status_msg_ajax" class="flash_message flash hide alert alert-success"><button type="button" class="close" data-dismiss="alert">&times;</button><span id="status_msg_txt_ajax"></span></div>
+		<div id="error_msg_ajax" class="flash_error flash hide alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><span id="error_msg_txt_ajax"></span></div>
 	</div>
 	
 	<!-- content -->

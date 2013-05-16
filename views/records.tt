@@ -1,9 +1,7 @@
 <script> $(function () {
 	$('input:submit, button').button();
 	$('#nav_menu_domains').addClass('nav_menu_active');
-	$('img').tipTip({
-		delay: '800'
-	});
+	$('#nav_menu_domains').addClass('active');
 	$('#add_record_form').validate({
 		rules: {
 			add_record_ttl: 'required',
@@ -81,44 +79,41 @@
 		$('.flash').fadeOut();
 		$('#display_records').fadeToggle()
 	});
-	$("#confirm_action").dialog({
-		autoOpen: false,
-		modal: true
-	});
-	$(".confirm_link").click(function (e) {
+	$(".confirm_delete_record").click(function (e) {
 		e.preventDefault();
 		$('.flash').fadeOut();
 		var targetUrl = $(this).attr("href");
-		$("#confirm_action").dialog({
-			buttons: {
-				"Confirm": function () {
-					window.location.href = targetUrl
-				},
-				"Cancel": function () {
-					$(this).dialog("close")
-				}
-			}
+
+		var record_id = $(this).attr('delete');
+		$('#record_to_delete').text(
+			$('#edit_name_' + record_id).val() + ' IN ' +
+			$('#edit_ttl_' + record_id).val() + ' ' +
+			$('#edit_type_' + record_id + ' option:selected').val() + ' ' +
+			$('#edit_prio_' + record_id).val() + ' ' +
+			$('#edit_content_' + record_id).val()
+		);
+
+		$('#confirm_action_delete_button').click(function(e) {
+			e.preventDefault();
+			window.location.href = targetUrl
 		});
-		$("#confirm_action").dialog("open")
+		$('#confirm_action_delete').modal('show');
 	});
-	$("#confirm_action_template").dialog({
+	/*$("#confirm_action_template").dialog({
 		autoOpen: false,
 		modal: true
-	});
+	});*/
 	$("#confirm_template").click(function (e) {
 		e.preventDefault();
 		$('.flash').fadeOut();
-		$("#confirm_action_template").dialog({
-			buttons: {
-				"Confirm": function () {
-					$('#add_template_form').submit()
-				},
-				"Cancel": function () {
-					$(this).dialog("close")
-				}
-			}
-		});
-		$("#confirm_action_template").dialog("open")
+		$("#confirm_action_template").modal('show');
+		/* $('#add_template_form').submit() */
+	});
+	$('#confirm_action_template_button').click(function(e) {
+		$('#add_template_form').submit();
+		// no need for hiding, as we reload the page
+		// $('#display_domain_template_block').fadeToggle()
+		// $("#confirm_action_template").modal('hide');
 	});
 	$('#add_record_type').change(function () {
 		var type = $('#add_record_type').val();
@@ -559,8 +554,9 @@
 					$('#type_' + id).hide();
 					$('#ttl_' + id).hide();
 					$('#content_' + id).hide();
-					$('#edit_record_' + id).hide();
-					$('#delete_record_' + id).hide();
+					/* $('#edit_record_' + id).hide();
+					$('#delete_record_' + id).hide();*/
+					$('#record_read_controls_'+id).hide();
 					if (type == 'MX' || type == 'SRV') {
 						$('#prio_' + id).hide();
 						$('input[id=edit_prio_' + id + ']').val(prio);
@@ -574,8 +570,9 @@
 					$('#edit_type_' + id).fadeIn();
 					$('#edit_ttl_' + id).fadeIn();
 					$('#edit_content_' + id).fadeIn();
-					$('#save_record_' + id).fadeIn();
-					$('#cancel_record_' + id).fadeIn()
+					/* $('#save_record_' + id).fadeIn();
+					$('#cancel_record_' + id).fadeIn() */
+					$('#record_write_controls_'+id).fadeIn();
 				} else {
 					$('#error_msg_txt_ajax').text(message);
 					$('#error_msg_ajax').fadeIn()
@@ -624,8 +621,9 @@
 					$('#edit_type_' + id).hide();
 					$('#edit_ttl_' + id).hide();
 					$('#edit_content_' + id).hide();
-					$('#save_record_' + id).hide();
-					$('#cancel_record_' + id).hide();
+					/* $('#save_record_' + id).hide();
+					$('#cancel_record_' + id).hide();*/
+					$('#record_write_controls_'+ id).hide();
 					if (type == 'MX' || type == 'SRV' || tmptype == 'MX' || tmptype == 'SRV') {
 						$('#edit_prio_' + id).hide();
 						$('#prio_' + id).text(prio);
@@ -639,8 +637,9 @@
 					$('#type_' + id).fadeIn();
 					$('#ttl_' + id).fadeIn();
 					$('#content_' + id).fadeIn();
-					$('#edit_record_' + id).fadeIn();
-					$('#delete_record_' + id).fadeIn()
+					/* $('#edit_record_' + id).fadeIn();
+					$('#delete_record_' + id).fadeIn()*/
+					$('#record_read_controls_'+ id).fadeIn();
 				} else {
 					$('#error_msg_txt_ajax').text(message);
 					$('#error_msg_ajax').fadeIn()
@@ -694,8 +693,9 @@
 					$('#edit_type_' + id).hide();
 					$('#edit_ttl_' + id).hide();
 					$('#edit_content_' + id).hide();
-					$('#save_record_' + id).hide();
-					$('#cancel_record_' + id).hide();
+					/* $('#save_record_' + id).hide();
+					$('#cancel_record_' + id).hide(); */
+					$('#record_write_controls_'+ id).hide();
 					if (type == 'MX' || type == 'SRV') {
 						$('#edit_prio_' + id).hide();
 						$('#prio_' + id).text(prio);
@@ -709,8 +709,9 @@
 					$('#type_' + id).fadeIn();
 					$('#ttl_' + id).fadeIn();
 					$('#content_' + id).fadeIn();
-					$('#edit_record_' + id).fadeIn();
-					$('#delete_record_' + id).fadeIn();
+					/* $('#edit_record_' + id).fadeIn();
+					$('#delete_record_' + id).fadeIn(); */
+					$('#record_read_controls_'+ id).fadeIn();
 					$('#status_msg_txt_ajax').text(message);
 					$('#status_msg_ajax').fadeIn()
 				} else {
@@ -720,447 +721,429 @@
 			}
 		})
 	})
-}); </script>
-<div id="mini_menu_bg">
-        <ul id="mini_menu">
-	<li><a class="display_domain_info_button" href="#">Domain Information</a></li>
-	<li><a id="display_soa_button" href="#">SOA record</a></li>
-[% IF domain_type == 'MASTER' || domain_type == 'NATIVE' %]
-	<li><a id="display_find_button" class="display_find_button" href="#">Find &amp; replace</a></li>
-        <li><a class="display_template_button" href="#">Apply template</a></li>
-	<li><a class="display_add_button" href="#">Add record</a></li>
-[% END %]
-        </ul>
-</div>
-<div id="display_domain_info_block" class="display_hidden">
-        <span class="page_title">[% domain_name %]</span>
-        <a href="#"><img id="edit_domain_info_button" edit="[% domain_id %]" src="/images/icons/database_edit.png" class="center" alt="Edit" title="Edit" /></a>
-        <a href="#"><img id="save_domain_info_button" class="display_hidden" save="[% domain_id %]" src="/images/icons/table_save.png" class="center" alt="Save" title="Save" /></a>
-        <a href="#"><img id="cancel_domain_info_button" class="display_hidden" cancel="[% domain_id %]" src="/images/icons/cancel.png" class="center" alt="Cancel" title="Cancel" /></a>
-	<a href="#" class="sub_menu"><img class="sub_menu display_domain_info_button" src="/images/icons/application_delete.png" alt="Close" title="Close" class="alignright" /></a>
-        <a href="#" class="sub_menu"><img id="display_domain_info_toggle" class="sub_menu" src="/images/icons/application_double.png" alt="Toggle" title="Toggle" class="alignright" /></a>
-        <div class="line_break"></div>
-        <div class="content_break"></div>
-        <div id="display_domain_info">
-		<form id="update_domain" method="post" action="/domains/edit/records/id/[% domain_id %]/update/domain">
-                	<table class="table_formatter">
-                        	<tr>
-                                	<td>
-                                        	<div class="table_formatter table_formatter_label ui-corner-all table_formatter_color1">
-                                                	<span>Name</span>
-                                        	</div>
-                                	</td>
-                                	<td>
-                                        	<div class="table_formatter table_formatter_domain_info ui-corner-all table_formatter_color1">
-                                                	<span id="domain_name_[% domain_id %]">[% domain_name %]</span>
-							<input id="domain_edit_name_[% domain_id %]" name="edit_name" class="display_hidden ui-corner-all" type="text" maxlength="255" value="[% domain_name %]" />
-                                        	</div>
-                                	</td>
-				</tr>
-                                <tr>
-                                        <td>
-                                                <div class="table_formatter table_formatter_label ui-corner-all table_formatter_color2">
-                                                        <span>Owner</span>
-                                                </div>
-                                        </td>
-                                        <td>
-                                                <div class="table_formatter table_formatter_domain_info ui-corner-all table_formatter_color2">
-                                                        <span id="domain_owner">[% domain_owner_login %]</span>
-                                                        <select id="domain_edit_owner" title="Owner" name="edit_owner" class="display_hidden">
-                                                        [% FOREACH id IN users.keys.sort %]
-                                                                [% IF users.$id.id == domain_owner_id %]
-                                                                        <option value="[% users.$id.id %]" selected="selected">[% users.$id.login %]</option>
-                                                                [% ELSE %]
-                                                                        <option value="[% users.$id.id %]">[% users.$id.login %]</option>
-                                                                [% END %]
-                                                        [% END %]
-                                                        </select>
-                                                </div>
-                                        </td>
-                                </tr>
-				<tr>
-                                	<td>
-                                        	<div class="table_formatter table_formatter_label ui-corner-all table_formatter_color1">
-                                                	<span>Type</span>
-                                        	</div>
-                                	</td>
-                                	<td>
-                                        	<div class="table_formatter table_formatter_domain_info ui-corner-all table_formatter_color1">
-                                                	<span id="domain_type">[% domain_type %]</span>
-                                                	<select id="domain_edit_type" edit="[% domain_id %]" class="display_hidden" title="Select one" name="edit_type">
-								<option value="NATIVE">NATIVE</option>
-                                                        	<option value="MASTER">MASTER</option>
-                                                        	<option value="SLAVE">SLAVE</option>
-                                                	</select>
-                                        	</div>
-                                	</td>
-				</tr>
-			[% IF domain_type == 'SLAVE' %]
-				<tr id="display_master">
-			[% ELSE %]
-				<tr id="display_master" class="display_hidden">
-			[% END %]
-					<td>
-			                	<div class="table_formatter table_formatter_label ui-corner-all table_formatter_color2">
-                                                	<span>Master Address</span>
-                                        	</div>
-					</td>
-					<td>
-						<div class="table_formatter table_formatter_domain_info ui-corner-all table_formatter_color2">
-							<span id="domain_master_[% domain_id %]">[% domain_master %]</span>
-                                        		<input id="domain_edit_master_[% domain_id %]" name="edit_master" class="ui-corner-all display_hidden" type="text" maxlength="128" value="[% domain_master %]" title="Comma separated list of masters" />
-                                        	</div>
-					</td>
-                        	</tr>
-			</table>
-		</form>
-        </div>
-        <div class="content_break"></div>
-</div>
-<div id="display_soa_block" class="display_hidden">
-        <span class="page_title">SOA record</span>
-[% IF domain_type == 'MASTER' || domain_type == 'NATIVE' %]
-        <a href="#"><img id="edit_soa_button" edit="[% domain_id %]" src="/images/icons/database_edit.png" class="center" alt="Edit" title="Edit" /></a>
-[% END %]
-	<a href="#"><img id="save_soa_button" class="display_hidden" save="[% soa_id %]" domain_id="[% domain_id %]" domain="[% domain_name %]" src="/images/icons/table_save.png" class="center" alt="Save" title="Save" /></a>
-	<a href="#"><img id="cancel_soa_button" class="display_hidden" cancel="[% domain_id %]" src="/images/icons/cancel.png" class="center" alt="Cancel" title="Cancel" /></a>
-        <a href="#" class="sub_menu"><img id="display_soa_hide" class="sub_menu" src="/images/icons/application_delete.png" alt="Close" title="Close" class="alignright" /></a>
-        <a href="#" class="sub_menu"><img id="display_soa_toggle" class="sub_menu" src="/images/icons/application_double.png" alt="Toggle" title="Toggle" class="alignright" /></a>
-        <div class="line_break"></div>
-        <div class="content_break"></div>
-        <div id="display_soa">
-		<table class="table_formatter">
-			<tr>
-				<td>
-					<div class="table_formatter table_formatter_label ui-corner-all table_formatter_color1">
-						<span>Primary name server</span>
-					</div>
-				</td>
-                        	<td>
-					<div class="table_formatter table_formatter_soa ui-corner-all table_formatter_color1">
-						<span id="soa_name_server">[% name_server %]</span>
-						<input id="edit_soa_name_server" class="display_hidden ui-corner-all" type="text" maxlength="90" value="[% name_server %]" />
-					</div>
-				</td>
-			</tr>
-			<tr>
-                        	<td>
-					<div class="table_formatter table_formatter_label ui-corner-all table_formatter_color2">
-						<span>Contact</span>
-					</div>
-				</td>
-                        	<td>
-					<div class="table_formatter table_formatter_soa ui-corner-all table_formatter_color2">
-						<span id="soa_contact">[% contact %]</span>
-						<input id="edit_soa_contact" class="display_hidden ui-corner-all" type="text" maxlength="90" value="[% contact %]" />
-					</div>
-				</td>
-			</tr>
-                        <tr>
-				<td>
-					<div class="table_formatter table_formatter_label ui-corner-all table_formatter_color1">
-						<span>Refresh</span>
-					</div>
-				</td>
-				<td>
-					<div class="table_formatter_soa table_formatter ui-corner-all table_formatter_color1">
-						<span id="soa_refresh">[% refresh %]</span>
-						<input id="edit_soa_refresh" class="display_hidden ui-corner-all" type="text" maxlength="20" value="[% refresh %]" />
-					</div>
-				</td>
-			</tr>
-                        <tr>
-				<td>
-					<div class="table_formatter table_formatter_label ui-corner-all table_formatter_color2">
-						<span>Retry</span>
-					</div>
-				</td>
-                        	<td>
-					<div class="table_formatter_soa table_formatter ui-corner-all table_formatter_color2">
-						<span id="soa_retry">[% retry %]</span>
-						<input id="edit_soa_retry" class="display_hidden ui-corner-all" type="text" maxlength="20" value="[% retry %]" />
-					</div>
-				</td>
-			</tr>
-                        <tr>
-				<td>
-					<div class="table_formatter table_formatter_label ui-corner-all table_formatter_color1">
-						<span>Expire</span>
-					</div>
-				</td>
-                        	<td>
-					<div class="table_formatter_soa table_formatter ui-corner-all table_formatter_color1">
-						<span id="soa_expire">[% expire %]</span>
-						<input id="edit_soa_expire" class="display_hidden ui-corner-all" type="text" maxlength="20" value="[% expire %]" />
-					</div>
-				</td>
-			</tr>
-                        <tr>
-				<td>
-					<div class="table_formatter table_formatter_label ui-corner-all table_formatter_color2">
-						<span>Minimum</span>
-					</div>
-				</td>
-                        	<td>
-					<div class="table_formatter_soa table_formatter ui-corner-all table_formatter_color2">
-						<span id="soa_minimum">[% minimum %]</span>
-						<input id="edit_soa_minimum" class="display_hidden ui-corner-all" type="text" maxlength="20" value="[% minimum %]" />
-					</div>
-				</td>
-			</tr>
-                        <tr>
-                                <td>
-                                        <div class="table_formatter table_formatter_label ui-corner-all table_formatter_color1">
-                                                <span>TTL</span>
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter_soa table_formatter ui-corner-all table_formatter_color1">
-                                                <span id="soa_ttl">[% ttl %]</span>
-                                                <input id="edit_soa_ttl" class="display_hidden ui-corner-all" type="text" maxlength="20" value="[% ttl %]" />
-                                        </div>
-                                </td>
-                        </tr>
-		</table>
-        </div>
-        <div class="content_break"></div>
-</div>
-<div id="display_find_block" class="display_hidden">
-        <span class="page_title">Find &amp; replace</span>
-        <a href="#" class="sub_menu"><img id="display_find_hide" class="sub_menu display_find_button" src="/images/icons/application_delete.png" alt="Close" title="Close" class="alignright" /></a>
-        <a href="#" class="sub_menu"><img id="display_find_toggle" class="sub_menu" src="/images/icons/application_double.png" alt="Toggle" title="Toggle" class="alignright" /></a>
-        <div class="line_break"></div>
-        <div class="content_break"></div>
-        <div id="display_find">
-                <form id="find_form" method="post" action="/domains/edit/records/id/[% domain_id %]/find/replace">
-                        <ul class="form ui-corner-all">
-                                <li>
-                                        <label>Find</label>
-					<input id="find_search" class="ui-corner-all" name="find_search" type="text" maxlength="255" value="" />
-                                </li>
-                                <li>
-                                        <label>In</label>
-                                        <select id="find_in" title="Find in" name="find_in">
-                                                <option value="ttl">TTL</option>
-                                                <option value="prio">Priority</option>
-                                                <option value="content">Content</option>
-                                         </select>
-                                </li>
-				<li>
-                                        <label>Type is</label>
-                                                <select id="find_type" title="Type" name="find_type">
-                                                        <option value="A" selected="selected">A</option>
-                                                        <option value="AAAA">AAAA</option>
-                                                        <option value="CNAME">CNAME</option>
-                                                        <option value="LOC">LOC</option>
-                                                        <option value="MX">MX</option>
-                                                        <option value="NS">NS</option>
-                                                        <option value="PTR">PTR</option>
-                                                        <option value="SPF">SPF</option>
-                                                        <option value="SRV">SRV</option>
-                                                        <option value="TXT">TXT</option>
-                                                </select>
+});
+</script>
 
-				</li>
-                                <li>
-                                        <label>Replace with</label>
-                                        <input id="find_replace" class="ui-corner-all" name="find_replace" type="text" maxlength="255" value="" />
-                                </li>
-                                <li>
-                                        <input id="confirm_find" type="submit" value="Save" /><button class="display_find_button">Cancel</button>
-                                </li>
-                        </ul>
-                </form>
-        </div>
-        <div class="content_break"></div>
+<div class="container">
+	<h3>[% domain_name %]</h3>
 </div>
-<div id="display_domain_template_block" class="display_hidden">
-        <span class="page_title">Apply template </span><span class="help_info">Applying a template to your domain will delete all current records</span>
-        <a href="#" class="sub_menu"><img id="display_template_hide" class="sub_menu display_template_button" src="/images/icons/application_delete.png" alt="Close" title="Close" class="alignright" /></a>
-        <a href="#" class="sub_menu"><img id="display_template_toggle" class="sub_menu" src="/images/icons/application_double.png" alt="Toggle" title="Close" class="alignright" /></a>
-        <div class="line_break"></div>
-        <div class="content_break"></div>
-        <div id="display_template">
-                <form id="add_template_form" method="post" action="/domains/edit/records/id/[% domain_id %]/add/template">
-                        <ul class="form ui-corner-all">
-                                <li id="add_template">
-                                        <label>Template</label>
-                                                <select id="apply_template" title="Template" name="apply_template">
-                                                        [% FOREACH id IN templates.keys.sort %]
-                                                                <option value="[% templates.$id.id %]">[% templates.$id.name %]</option>
-                                                        [% END %]
-                                                </select>
-                                </li>
-                                <li>
-                                        <input id="confirm_template" type="submit" value="Save" /><button class="display_template_button">Cancel</button>
-                                </li>
-                        </ul>
-                </form>
-        </div>
-        <div class="content_break"></div>
-</div>
-<div id="display_add_block" class="display_hidden">
-        <span class="page_title">Add record</span>
-        <a href="#" class="sub_menu"><img id="display_add_hide" class="sub_menu display_add_hide" src="/images/icons/application_delete.png" alt="Close" title="Close" class="alignright" /></a>
-        <a href="#" class="sub_menu"><img id="display_add_toggle" class="sub_menu" src="/images/icons/application_double.png" alt="Toggle" title="Toggle" class="alignright" /></a>
-        <div class="line_break"></div>
-        <div class="content_break"></div>
-        <div id="display_add">
-                <form id="add_record_form" method="post" action="/domains/edit/records/id/[% domain_id %]/add">
-                        <ul class="form ui-corner-all">
-                                <li id="add_host">
-                                        <label>Name</label>
-                                        <input id="add_record_host" name="add_record_host" type="text" value=""  maxlength="255" class="ui-corner-all" /><span class="info">.[% domain_name %]</span>
-                                </li>
-                                <li id="add_type">
-                                        <label>Type</label>
-                                                <select id="add_record_type" title="Type" name="add_record_type">
-                                                        <option value="A" selected="selected">A</option>
-                                                        <option value="AAAA">AAAA</option>
-                                                        <option value="CNAME">CNAME</option>
-                                                        <option value="LOC">LOC</option>
-                                                        <option value="MX">MX</option>
-                                                        <option value="NS">NS</option>
-                                                        <option value="PTR">PTR</option>
-                                                        <option value="SPF">SPF</option>
-                                                        <option value="SRV">SRV</option>
-                                                        <option value="TXT">TXT</option>
-                                                </select>
-                                </li>
-                                <li id="add_prio" class="display_hidden">
-                                        <label>Priority</label>
-                                        <input id="add_record_prio" name="add_record_prio" class="ui-corner-all" type="text" maxlength="255" value="" />
-                                </li>
-				<li id="add_ttl">
-                                        <label>TTL</label>
-                                        <input id="add_record_ttl" name="add_record_ttl" class="ui-corner-all" type="text" maxlength="255" value="" />
-				</li>
-                                <li id="add_content">
-                                        <label>Content</label>
-                                        <input id="add_record_content" name="add_record_content" class="ui-corner-all" type="text" maxlength="255" value="" />
-                                </li>
-                                <li>
-                                        <input type="submit" value="Save" /><button class="display_add_hide">Cancel</button>
-                                </li>
-                        </ul>
-                </form>
-        </div>
-        <div class="content_break"></div>
-</div>
-<div id="display_records_block">
-        <table id="block_table">
-                <tr>
-                        <td id="block_title">
-				<div>
-                                	<span class="page_title">Records for [% domain_name %]</span>
+
+<div class="container navbar" id="mini_menu_bg">
+	<div class="navbar-inner">
+		<ul class="nav" id="mini_menu">
+			<li><a class="display_domain_info_button" href="#">Domain Information</a></li>
+			<li><a id="display_soa_button" href="#">SOA record</a></li>
 			[% IF domain_type == 'MASTER' || domain_type == 'NATIVE' %]
-					<a href="#"><img edit="[% domain_id %]" src="/images/icons/database_add.png" class="display_add_button center" alt="Add record" title="Add record" /></a>
+			<li><a id="display_find_button" class="display_find_button" href="#">Find &amp; replace</a></li>
+			<li><a class="display_template_button" href="#">Apply template</a></li>
+			<li><a class="display_add_button" href="#">Add record</a></li>
 			[% END %]
+		</ul>
+		<form class="navbar-form pull-right" method='post' action="/domains/edit/records/id/[% domain_id %]">
+			<input type="text" class="search-query" name="record_search" placeholder="Search records...">
+			<input type="submit" class="btn" value="Search" />
+		</form>
+	</div>
+</div>
+
+<div id="display_domain_info_block" class="container">
+	<div class="row">
+		<div class="span6">
+			<strong>Domain information</strong>
+		</div>
+		<div class="span6">
+			<div class="btn-toolbar pull-right">
+				<div class="btn-group">
+					<a href="#" id="edit_domain_info_button" edit="[% domain_id %]" class="btn" alt="Edit" title="Edit" /><i class="icon-pencil"></i></a>
 				</div>
-                        </td>
-                        <td id="block_search">
-                                <form method="post" action="/domains/edit/records/id/[% domain_id %]">
-                                        <input type="text" name="record_search" maxlength="255" class="ui-corner-all"/>&nbsp;<input type="submit" value="Search" />
-                                </form>
-                        </td>
-                        <td id="block_util">
-				<a href="#" class="sub_menu"><img id="display_records_toggle" class="sub_menu" src="/images/icons/application_double.png" alt="Toggle" title="Toggle" class="alignright" /></a>
-                        </td>
-                </tr>
-        </table>
-        <div class="line_break"></div>
-        <div id="display_records">
-                [% colour = 'table_formatter_color2' %]
-                <table class="table_formatter">
-                        <tr>
-                                <td>
-                                        <div class="table_formatter table_formatter_header table_formatter_records ui-corner-all">
-                                                <span>Name</span>
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_header table_formatter_ttl ui-corner-all">
-                                                <span>TTL</span>
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_header table_formatter_rtype ui-corner-all">
-                                                <span>Type</span>
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_header table_formatter_prio ui-corner-all">
-                                                <span>Priority</span>
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_header table_formatter_prio ui-corner-all">
-                                                <span>Content</span>
-                                        </div>
-                                </td>
-                        </tr>
-
-                [% FOREACH id IN records.keys.sort %]
-                [% IF colour == 'table_formatter_color1' %]
-                        [% colour = 'table_formatter_color2' %]
-                [% ELSE %]
-
-                        [% colour = 'table_formatter_color1' %]
-                [% END %]
-                        <tr>
-                                <td>
-					[% nice_name = records.$id.name.replace('.' _ domain_name, '') %]
-					[%  nice_name = nice_name.replace(domain_name, '') %]
-                                        <div class="table_formatter table_formatter_name ui-corner-all [% colour %]">
-                                                <span id="name_[% records.$id.id %]">[% nice_name %]</span>
-                                                <input id="edit_name_[% records.$id.id %]" name="edit_name" class="display_hidden ui-corner-all" type="text" maxlength="255" value="[% records.$id.name %]" />
-                                        </div>
-                                </td>
+				<div class="btn-group">
+					<a href="#" id="save_domain_info_button" class="hide btn btn-primary" save="[% domain_id %]" alt="Save" title="Save" /><i class="icon-ok icon-white"></i></a>
+					<a href="#" id="cancel_domain_info_button" class="hide btn" cancel="[% domain_id %]" alt="Cancel" title="Cancel" /><i class="icon-ban-circle"></i></a>
+				</div>
+				<div class="btn-group">
+					<a href="#" class="display_domain_info_button btn" alt="Close" title="Close" /><i class="icon-remove"></i></a>
+					<a href="#" id="display_domain_info_toggle" class="btn" alt="Toggle" title="Toggle"><i class="icon-eye-open"></i></a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row" id="display_domain_info">
+		<div class="span12">
+			<form id="update_domain" method="post" action="/domains/edit/records/id/[% domain_id %]/update/domain">
+			<table class="table table_formatter">
+			<tr>
+				<td>Name</td>
 				<td>
-                                        <div class="table_formatter table_formatter_ttl ui-corner-all [% colour %]">
-                                                <span id="ttl_[% records.$id.id %]">[% records.$id.ttl %]</span>
-                                                <input id="edit_ttl_[% records.$id.id %]" name="edit_ttl" class="display_hidden ui-corner-all" type="text" maxlength="255" value="[% records.$id.ttl %]" />
-                                        </div>
-                                <td>
-                                        <div class="table_formatter table_formatter_rtype ui-corner-all [% colour %]">
-                                                <span id="type_[% records.$id.id %]">[% records.$id.type %]</span>
-						<select id="edit_type_[% records.$id.id %]" select="[% records.$id.id %]" class="edit_type display_hidden"  title="Type" name="edit_type">
-                                        		<option value="A" selected="selected">A</option>
-                                        		<option value="AAAA">AAAA</option>
-                                        		<option value="CNAME">CNAME</option>
-                                        		<option value="LOC">LOC</option>
-                                        		<option value="MX">MX</option>
-                                        		<option value="NS">NS</option>
-                                        		<option value="PTR">PTR</option>
-                                        		<option value="SPF">SPF</option>
-                                        		<option value="SRV">SRV</option>
-                                        		<option value="TXT">TXT</option>
-                                		</select>
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_prio ui-corner-all [% colour %]">
-                                                <span id="prio_[% records.$id.id %]">[% records.$id.prio %]</span>
-                                                <input id="edit_prio_[% records.$id.id %]" name="edit_prio" class="display_hidden ui-corner-all" type="text" maxlength="255" value="[% records.$id.prio %]" />
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_content ui-corner-all [% colour %]">
-                                                <span id="content_[% records.$id.id %]">[% records.$id.content %]</span>
-                                                <input id="edit_content_[% records.$id.id %]" name="edit_content" class="display_hidden ui-corner-all" type="text" maxlength="255" value="[% records.$id.content %]" />
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_links ui-corner-all [% colour %]">
-                                                <a href="#"><img id="edit_record_[% records.$id.id %]" class="edit_record_button" edit="[% records.$id.id %]" src="/images/icons/database_edit.png" class="center" alt="Edit" title="Edit" /></a>
-                                                <a href="/domains/edit/records/id/[% domain_id %]/delete/recordid/[% records.$id.id %]" class="confirm_link"><img id="delete_record_[% records.$id.id %]" delete="[% records.$id.id %]" src="/images/icons/database_delete.png" class="center" alt="Delete" title="Delete" /></a>
-                                                <a href="#"><img id="save_record_[% records.$id.id %]" class="save_record_button display_hidden" save="[% records.$id.id %]" src="/images/icons/table_save.png" class="center" alt="Save" title="Save" /></a>
-                                                <a href="#"><img id="cancel_record_[% records.$id.id %]" class="cancel_record_button display_hidden" cancel="[% records.$id.id %]" src="/images/icons/cancel.png" class="center" alt="Cancel" title="Cancel" /></a>
-                                        </div>
-                                </td>
-                        </tr>
-                [% END %]
-                </table>
+					<div class="table_formatter_domain_info">
+						<span id="domain_name_[% domain_id %]">[% domain_name %]</span>
+						<input id="domain_edit_name_[% domain_id %]" name="edit_name" class="hide " type="text" value="[% domain_name %]" />
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>Owner</td>
+				<td>
+					<div class="table_formatter_domain_info">
+						<span id="domain_owner">[% domain_owner_login %]</span>
+						<select id="domain_edit_owner" title="Owner" name="edit_owner" class="hide">
+						[% FOREACH id IN users.keys.sort %]
+								[% IF users.$id.id == domain_owner_id %]
+										<option value="[% users.$id.id %]" selected="selected">[% users.$id.login %]</option>
+								[% ELSE %]
+										<option value="[% users.$id.id %]">[% users.$id.login %]</option>
+								[% END %]
+						[% END %]
+						</select>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>Type</td>
+				<td>
+					<div class="table_formatter table_formatter_domain_info  table_formatter_color1">
+						<span id="domain_type">[% domain_type %]</span>
+						<select id="domain_edit_type" edit="[% domain_id %]" class="hide" title="Select one" name="edit_type">
+							<option value="NATIVE">NATIVE</option>
+							<option value="MASTER">MASTER</option>
+							<option value="SLAVE">SLAVE</option>
+						</select>
+					</div>
+				</td>
+			</tr>
+			[% IF domain_type == 'SLAVE' %]
+			<tr id="display_master">
+			[% ELSE %]
+			<tr id="display_master" class="hide">
+			[% END %]
+				<td>Master address</td>
+				<td>
+					<div class="table_formatter table_formatter_domain_info  table_formatter_color2">
+						<span id="domain_master_[% domain_id %]">[% domain_master %]</span>
+						<input id="domain_edit_master_[% domain_id %]" name="edit_master" class=" hide" type="text"  value="[% domain_master %]" title="Comma separated list of masters" />
+					</div>
+				</td>
+			</tr>
+			</table>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div id="display_soa_block" class="hide container">
+	<div class="row">
+		<div class="span6">
+			<strong>SOA record</strong>
+		</div>
+		<div class="span6">
+			<div class="btn-toolbar pull-right">
+				[% IF domain_type != 'SLAVE' %]
+				<div class="btn-group">
+					<a href="#" id="edit_soa_button" edit="[% domain_id %]" class="btn" alt="Edit" title="Edit" /><i class="icon-pencil"></i></a>
+				</div>
+				[% END %]
+				<div class="btn-group">
+					<a href="#" id="save_soa_button" class="hide btn btn-primary" save="[% domain_id %]" alt="Save" title="Save" /><i class="icon-ok icon-white"></i></a>
+					<a href="#" id="cancel_soa_button" class="hide btn" cancel="[% domain_id %]" alt="Cancel" title="Cancel" /><i class="icon-ban-circle"></i></a>
+				</div>
+				<div class="btn-group">
+					<a href="#" id="display_soa_hide" class="btn" alt="Close" title="Close" /><i class="icon-remove"></i></a>
+					<a href="#" id="display_soa_toggle" class="btn" alt="Toggle" title="Toggle"><i class="icon-eye-open"></i></a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row" id="display_soa">
+		<div class="span12">
+			<table class="table">
+			<tbody>
+				<tr>
+					<td> <span>Primary name server</span> </td>
+					<td>
+						<span id="soa_name_server">[% name_server %]</span>
+						<input id="edit_soa_name_server" class="hide " type="text"  value="[% name_server %]" />
+					</td>
+				</tr>
+				<tr>
+					<td> <span>Contact</span> </td>
+					<td>
+						<span id="soa_contact">[% contact %]</span>
+						<input id="edit_soa_contact" class="hide " type="text"  value="[% contact %]" />
+					</td>
+				</tr>
+				<tr>
+					<td> <span>Refresh</span> </td>
+					<td>
+						<span id="soa_refresh">[% refresh %]</span>
+						<input id="edit_soa_refresh" class="hide " type="text"  value="[% refresh %]" />
+					</td>
+				</tr>
+				<tr>
+					<td> <span>Retry</span> </td>
+					<td>
+						<span id="soa_retry">[% retry %]</span>
+						<input id="edit_soa_retry" class="hide " type="text"  value="[% retry %]" />
+					</td>
+				</tr>
+				<tr>
+					<td> <span>Expire</span> </td>
+					<td>
+						<span id="soa_expire">[% expire %]</span>
+						<input id="edit_soa_expire" class="hide " type="text"  value="[% expire %]" />
+					</td>
+				</tr>
+				<tr>
+					<td> <span>Minimum</span> </td>
+					<td>
+						<span id="soa_minimum">[% minimum %]</span>
+						<input id="edit_soa_minimum" class="hide " type="text"  value="[% minimum %]" />
+					</td>
+				</tr>
+				<tr>
+					<td> <span>TTL</span> </td>
+					<td>
+						<span id="soa_ttl">[% ttl %]</span>
+						<input id="edit_soa_ttl" class="hide " type="text"  value="[% ttl %]" />
+					</td>
+				</tr>
+			</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<div id="display_find_block" class="hide container">
+	<div class="row">
+		<div class="span6"><strong>Find &amp; replace</strong></div>
+		<div class="span6">
+			<div class="btn-group pull-right">
+				<a href="#" id="display_find_hide" class="btn display_template_hide" alt="Close" title="Close"><i class="icon-remove"></i></a>
+				<a href="#" id="display_find_toggle" class="btn" alt="Toggle" title="Toggle"><i class="icon-eye-open"></i></a>
+			</div>
+		</div>
+	</div>
+
+	<div class="row" id="display_find">
+		<form id="find_form" method="post" action="/domains/edit/records/id/[% domain_id %]/find/replace" class="form-horizontal">
+			<div class="control-group">
+				<label class="control-label">Find</label>
+				<div class="controls">
+					<input id="find_search" class="" name="find_search" type="text" value="" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">In</label>
+				<div class="controls">
+					<select id="find_in" title="Find in" name="find_in">
+						<option value="ttl">TTL</option>
+						<option value="prio">Priority</option>
+						<option value="content">RDATA</option>
+					</select>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">Where type is</label>
+				<div class="controls">
+					<select id="find_type" title="Type" name="find_type">
+						<option value="A" selected="selected">A</option>
+						<option value="AAAA">AAAA</option>
+						<option value="CNAME">CNAME</option>
+						<option value="LOC">LOC</option>
+						<option value="MX">MX</option>
+						<option value="NS">NS</option>
+						<option value="PTR">PTR</option>
+						<option value="SPF">SPF</option>
+						<option value="SRV">SRV</option>
+						<option value="TXT">TXT</option>
+					</select>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">Replace with</label>
+				<div class="controls">
+					<input id="find_replace" class="" name="find_replace" type="text" value="" />
+				</div>
+			</div>
+			<div class="form-actions">
+				<button id="confirm_find" class="btn btn-primary">Replace</button>
+				<button class="display_find_button btn">Cancel</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div id="display_domain_template_block" class="hide container">
+	<div class="row">
+		<div class="span6"><strong>Apply template</strong> <p class="help-block">Applying a template to your domain will delete all current records</p></div>
+		<div class="span6">
+			<div class="btn-group pull-right">
+				<a href="#" id="display_template_hide" class="btn display_add_hide" alt="Close" title="Close"><i class="icon-remove"></i></a>
+				<a href="#" id="display_template_toggle" class="btn" alt="Toggle" title="Toggle"><i class="icon-eye-open"></i></a>
+			</div>
+		</div>
+	</div>
+	<div class="row" id="display_template">
+		<form id="add_template_form" method="post" action="/domains/edit/records/id/[% domain_id %]/add/template" class="form-horizontal">
+			<div id="add_template" class="control-group">
+				<label class="control-label">Template</label>
+				<div class="controls">
+					<select id="apply_template" title="Template" name="apply_template">
+						[% FOREACH id IN templates.keys.sort %]
+						<option value="[% templates.$id.id %]">[% templates.$id.name %]</option>
+						[% END %]
+					</select>
+				</div>
+			</div>
+			<div class="form-actions">
+				<button id="confirm_template" class="btn btn-primary">Apply</button>
+				<button class="display_template_button btn">Cancel</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div id="display_add_block" class="hide container">
+
+	<div class="row">
+		<div class="span6"><strong>Add record</strong></div>
+		<div class="span6">
+			<div class="btn-group pull-right">
+				<a href="#" id="display_add_hide" class="btn display_add_hide" alt="Close" title="Close"><i class="icon-remove"></i></a>
+				<a href="#" id="display_add_toggle" class="btn" alt="Toggle" title="Toggle"><i class="icon-eye-open"></i></a>
+			</div>
+		</div>
+	</div>
+
+	<div class="row" id="display_add">
+		<form id="add_record_form" method="post" action="/domains/edit/records/id/[% domain_id %]/add" class="form-horizontal">
+			<div class="control-group" id="add_host">
+				<label class="control-label">Name</label>
+				<div class="controls">
+					<div class="input-append">
+						<input id="add_record_host" name="add_record_host" type="text" value=""  class="" /><span class="add-on">.[% domain_name %]</span>
+					</div>
+				</div>
+			</div>
+			<div class="control-group" id="add_type">
+				<label class="control-label">Type</label>
+				<div class="controls">
+					<select id="add_record_type" title="Type" name="add_record_type">
+						<option value="A" selected="selected">A</option>
+						<option value="AAAA">AAAA</option>
+						<option value="CNAME">CNAME</option>
+						<option value="LOC">LOC</option>
+						<option value="MX">MX</option>
+						<option value="NS">NS</option>
+						<option value="PTR">PTR</option>
+						<option value="SPF">SPF</option>
+						<option value="SRV">SRV</option>
+						<option value="TXT">TXT</option>
+					</select>
+				</div>
+			</div>
+			<div id="add_prio" class="control-group hide">
+				<label class="control-label">Priority</label>
+				<div class="controls">
+					<input id="add_record_prio" name="add_record_prio" class="" type="text" value="" />
+				</div>
+			</div>
+			<div class="control-group" id="add_ttl">
+				<label class="control-label">TTL</label>
+				<div class="controls">
+					<input id="add_record_ttl" name="add_record_ttl" class="" type="text" value="" />
+				</div>
+			</div>
+			<div class="control-group" id="add_content">
+				<label class="control-label">RDATA</label>
+				<div class="controls">
+					<input id="add_record_content" name="add_record_content" class="" type="text" value="" />
+				</div>
+			</div>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">Add</button>
+				<button class="display_add_hide btn">Cancel</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div id="display_records_block" class="container">
+	<div class="row">
+		<div class="span6"><strong>Records for [% domain_name %]</strong></div>
+		<div class="span6">
+			<div class="btn-group pull-right">
+				[% IF domain_type == 'MASTER' || domain_type == 'NATIVE' %]
+				<a href="#" edit="[% domain_id %]" class="btn display_add_button center" alt="Add record" title="Add record"><i class="icon-plus"></i></a>
+				[% END %]
+				<a href="#" id="display_records_toggle" class="btn" alt="Toggle" title="Toggle"><i class="icon-eye-open"></i></a>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="span12" id="display_records">
+			<table class="table table-striped table-hover">
+				<thead>
+				<tr>
+					<th>Name </th>
+					<th>TTL </th>
+					<th>Type </th>
+					<th>Priority </th>
+					<th>RDATA </th>
+					<th class="table_col_controls"></th>
+				</tr>
+				</thead>
+				<tbody>
+				[% FOREACH id IN records.keys.sort %]
+					[% nice_name = records.$id.name.replace('.' _ domain_name, '') %]
+					[% nice_name = nice_name.replace(domain_name, '') %]
+				<tr>
+					<td>
+						<span id="name_[% records.$id.id %]">[% nice_name %]</span>
+						<input id="edit_name_[% records.$id.id %]" name="edit_name" class="hide " type="text" value="[% records.$id.name %]" />
+					</td>
+					<td>
+						<span id="ttl_[% records.$id.id %]">[% records.$id.ttl %]</span>
+						<input id="edit_ttl_[% records.$id.id %]" name="edit_ttl" class="hide input-small" type="text" value="[% records.$id.ttl %]" />
+					</td>
+					<td>
+						<span id="type_[% records.$id.id %]">[% records.$id.type %]</span>
+						<select id="edit_type_[% records.$id.id %]" select="[% records.$id.id %]" class="edit_type hide input-mini"  title="Type" name="edit_type">
+							<option value="A" selected="selected">A</option>
+							<option value="AAAA">AAAA</option>
+							<option value="CNAME">CNAME</option>
+							<option value="LOC">LOC</option>
+							<option value="MX">MX</option>
+							<option value="NS">NS</option>
+							<option value="PTR">PTR</option>
+							<option value="SPF">SPF</option>
+							<option value="SRV">SRV</option>
+							<option value="TXT">TXT</option>
+						</select>
+					</td>
+					<td>
+						<span id="prio_[% records.$id.id %]">[% records.$id.prio %]</span>
+						<input id="edit_prio_[% records.$id.id %]" name="edit_prio" class="hide input-small" type="text" value="[% records.$id.prio %]" />
+					</td>
+					<td>
+						<span id="content_[% records.$id.id %]">[% records.$id.content %]</span>
+						<input id="edit_content_[% records.$id.id %]" name="edit_content" class="hide " type="text" value="[% records.$id.content %]" />
+					</td>
+					<td>
+						<div class="btn-group" id="record_read_controls_[% records.$id.id %]">
+							<a href="#" id="edit_record_[% records.$id.id %]" class="edit_record_button btn btn-mini" edit="[% records.$id.id %]" alt="Edit" title="Edit" ><i class="icon-pencil"></i></a>
+							<a href="/domains/edit/records/id/[% domain_id %]/delete/recordid/[% records.$id.id %]" class="confirm_delete_record btn btn-danger btn-mini" id="delete_record_[% records.$id.id %]" delete="[% records.$id.id %]" src="/images/icons/database_delete.png" class="center" alt="Delete" title="Delete" ><i class="icon-trash icon-white"></i></a>
+						</div>
+						<div class="btn-group hide" id="record_write_controls_[% records.$id.id %]">
+							<a href="#" id="save_record_[% records.$id.id %]" class="save_record_button btn btn-mini" save="[% records.$id.id %]" alt="Save" title="Save" ><i class="icon-ok"></i></a>
+							<a href="#" id="cancel_record_[% records.$id.id %]" class="cancel_record_button btn btn-mini" cancel="[% records.$id.id %]" alt="Cancel" title="Cancel" ><i class="icon-ban-circle"></i></a>
+						</div>
+					</td>
+				</tr>
+			[% END %]
+			</table>
+		</div>
+	</div>
+
+	<div class="row">
         [% IF lastpage > 1 %]
                 <div id="page_sort">
                         <div class="content_break"></div>
@@ -1180,9 +1163,47 @@
         </div>
         <div class="content_break"></div>
 </div>
-<div id="confirm_action" title="Confirmation" class="display_hidden">
-  This action will permanently delete this record.<br><br>Are you sure?
+
+<div id="confirm_action_delete" title="Confirmation" class="fade modal hide">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h3>Delete record</h3>
+	</div>
+	<div class="modal-body">
+		<p>This action will permanently delete followinf record:</p>
+		<div class="well" id="record_to_delete"></div>
+		<p>Are you sure?</p>
+	</div>
+	<div class="modal-footer">
+		<a href="#" class="btn" data-dismiss="modal">Close</a>
+		<a href="#" class="btn btn-danger" id="confirm_action_delete_button">Delete</a>
+	</div>
 </div>
-<div id="confirm_action_template" title="Confirmation" class="display_hidden">
-  Applying a template to your domain will delete all current records.<br><br>Are you sure?
+
+<div id="confirm_action_template" title="Confirmation" class="fade modal hide">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h3>Apply template</h3>
+	</div>
+	<div class="modal-body">
+		<p>Applying a template to your domain will delete all current records.<br><br>Are you sure?</p>
+	</div>
+	<div class="modal-footer">
+		<a href="#" class="btn" data-dismiss="modal">Close</a>
+		<a href="#" class="btn btn-primary" id="confirm_action_template_button">Apply template</a>
+	</div>
+</div>
+
+<div id="confirm_action_replace" title="Confirmation" class="fade modal hide">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h3>Find &amp; replace</h3>
+	</div>
+	<div class="modal-body">
+		<p>This will replace matched records (TODO: display 'em)<br />Are you sure?</p>
+	</div>
+	<div class="modal-footer">
+		<a href="#" class="btn" data-dismiss="modal">Close</a>
+		<a href="#" class="btn btn-primary" id="confirm_action_replace_button">Replace</a>
+	</div>
 </div>

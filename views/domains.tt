@@ -1,26 +1,7 @@
-<script> 
-	function handle_ajax_404() {
-		$('#error_msg_txt_ajax').text('Could not contact server');
-		$('#error_msg_ajax').fadeIn();
-	}
-
-	function handle_ajax_500() {
-		$('#error_msg_txt_ajax').text('A server-side error has occurred');
-		$('#error_msg_ajax').fadeIn();
-	}
-
-	function handle_ajax_generic_error() {
-		$('#error_msg_txt_ajax').text('A problem has occurred');
-		$('#error_msg_ajax').fadeIn();
-	}
-
-	$(function () {
-	
+<script> $(function () {
 	$('#nav_menu_domains').addClass('nav_menu_active');
+	$('#nav_menu_domains').addClass('active');
 	$('input:submit, button').button();
-	$('img').tipTip({
-		delay: '800'
-	});
 	[% IF flash.detail %]
 	var link = '<a id="detail_message_button" href="#">show details</a>';
 	$('#status_msg').append(link);
@@ -41,49 +22,19 @@
 			add_domain_name: 'required',
 		},
 	});
-	$("#confirm_action").dialog({
-		autoOpen: false,
-		modal: true
-	});
-	$(".confirm_link").click(function (e) {
+	$(".confirm_delete_domain").click(function (e) {
 		e.preventDefault();
 		$('.flash').fadeOut();
 		var targetUrl = $(this).attr("href");
-		$("#confirm_action").dialog({
-			buttons: {
-				"Confirm": function () {
-					// window.location.href = targetUrl
-					$.ajax({
-						type: 'POST',
-						url: targetUrl,
-						dataType: 'json',
-						//data: {},
-						statusCode: {
-							404: handle_ajax_404,
-							500: handle_ajax_500,
-						},
-						error: handle_ajax_generic_error,
-						success: function (json) {
-							if (json.stat == 'ok') {
-								if (json.id) {
-									$('#row_domain_' + json.id).fadeOut();
-								}
-								$('#error_msg_ajax').fadeOut();
-								$('#confirm_action').dialog('destroy');
-							}
-							else {
-								$('#error_msg_txt_ajax').text(message);
-								$('#error_msg_ajax').fadeIn()
-							}
-						}
-					})
-				},
-				"Cancel": function () {
-					$(this).dialog("close")
-				}
-			}
+		var domain_id = $(this).attr('delete');
+		$('#domain_to_delete').text(
+			$('#edit_name_' + domain_id).val() + ' (' + $('#edit_type_' + domain_id + ' option:selected').val() + ')'
+		);
+		$('#confirm_action_delete_domain_button').click(function(e) {
+			e.preventDefault();
+			window.location.href = targetUrl
 		});
-		$("#confirm_action").dialog("open")
+		$('#confirm_action_delete_domain_dialog').modal('show');
 	});
 	$('.display_add_button').click(function (e) {
 		e.preventDefault();
@@ -154,10 +105,19 @@
 			data: record,
 			cache: false,
 			statusCode: {
-				404: handle_ajax_404,
-				500: handle_ajax_500,
+				404: function () {
+					$('#error_msg_txt_ajax').text('Could not contact server');
+					$('#error_msg_ajax').fadeIn()
+				},
+				500: function () {
+					$('#error_msg_txt_ajax').text('A server-side error has occurred');
+					$('#error_msg_ajax').fadeIn()
+				}
 			},
-			error: handle_ajax_generic_error,
+			error: function () {
+				$('#error_msg_txt_ajax').text('A problem has occurred');
+				$('#error_msg_ajax').fadeIn()
+			},
 			success: function (json) {
 				var id = json.id;
 				var stat = json.stat;
@@ -183,10 +143,8 @@
 					}
 					$('#edit_name_' + id).fadeIn();
 					$('#edit_type_' + id).fadeIn();
-					$('#edit_domain_' + id).hide();
-					$('#delete_domain_' + id).hide();
-					$('#save_domain_' + id).fadeIn();
-					$('#cancel_domain_' + id).fadeIn()
+					$('#domain_read_controls_'+id).hide();
+					$('#domain_write_controls_'+id).fadeIn();
 				} else {
 					$('#error_msg_txt_ajax').text(message);
 					$('#error_msg_ajax').fadeIn()
@@ -204,12 +162,14 @@
 			$('.table_formatter_domains').width('320px');
 			$('.td_formatter_type').width('320px');
 			$('.table_formatter_type').width('320px');
-			$('#display_master_' + id).fadeIn()
+			$('#display_master_' + id).hide();
+			$('#edit_master_addr_' + id).fadeIn();
 		} else {
 			var count = $('#slave_count').val();
 			count--;
 			$('input[id=slave_count]').val(count);
 			$('#display_master_' + id).hide();
+			$('#edit_master_addr_' + id).hide();
 			if (count == 0) {
 				$('.table_formatter_domains').width('540px');
 				$('.td_formatter_type').width('100px');
@@ -234,66 +194,19 @@
 			data: record,
 			cache: false,
 			statusCode: {
-				404: handle_ajax_404,
-				500: handle_ajax_500,
-			},
-			error: handle_ajax_generic_error,
-			success: function (json) {
-				var id = json.id;
-				var stat = json.stat;
-				var message = json.message;
-				var name = json.name;
-				var type = json.type;
-				var master = json.master;
-				if (stat == 'ok') {
-					var count = $('#slave_count').val();
-					count--;
-					$('input[id=slave_count]').val(count);
-					$('#display_master_' + id).hide();
-					if (count == 0) {
-						$('.table_formatter_domains').width('540px');
-						$('.td_formatter_type').width('100px');
-						$('.table_formatter_type').width('100px')
-					}
-					$('#edit_name_' + id).hide();
-					$('#edit_type_' + id).hide();
-					$('#domain_' + id).text(name);
-					$('#type_' + id).text(type);
-					$('#domain_' + id).fadeIn();
-					$('#type_' + id).fadeIn();
-					$('#save_domain_' + id).hide();
-					$('#cancel_domain_' + id).hide();
-					$('#edit_domain_' + id).fadeIn();
-					$('#delete_domain_' + id).fadeIn();
-					$('#status_msg_txt_ajax').text(message);
-					$('#status_msg_ajax').fadeIn()
-				} else {
-					$('#error_msg_txt_ajax').text(message);
+				404: function () {
+					$('#error_msg_txt_ajax').text('Could not contact server');
+					$('#error_msg_ajax').fadeIn()
+				},
+				500: function () {
+					$('#error_msg_txt_ajax').text('A server-side error has occurred');
 					$('#error_msg_ajax').fadeIn()
 				}
-			}
-		})
-	});
-	$('.add_domain_button').click(function (e) {
-		e.preventDefault();
-		$('.flash').fadeOut();
-		var record = {
-			add_domain_name: $('#add_domain_name').val(),
-			add_domain_type: $('#add_domain_type').val(),
-			add_master_addr: $('#add_master_addr').val(),
-			add_domain_template: $('#add_domain_template').val()
-		};
-		$.ajax({
-			type: 'POST',
-			url: '/domains/add',
-			dataType: 'json',
-			data: record,
-			cache: false,
-			statusCode: {
-				404: handle_ajax_404,
-				500: handle_ajax_500,
 			},
-			error: handle_ajax_generic_error,
+			error: function () {
+				$('#error_msg_txt_ajax').text('A problem has occurred');
+				$('#error_msg_ajax').fadeIn()
+			},
 			success: function (json) {
 				var id = json.id;
 				var stat = json.stat;
@@ -305,7 +218,10 @@
 					var count = $('#slave_count').val();
 					count--;
 					$('input[id=slave_count]').val(count);
-					$('#display_master_' + id).hide();
+					$('#edit_master_addr_' + id).hide();
+					if (type == 'SLAVE') {
+						$('#display_master_' + id).hide();
+					}
 					if (count == 0) {
 						$('.table_formatter_domains').width('540px');
 						$('.td_formatter_type').width('100px');
@@ -317,10 +233,8 @@
 					$('#type_' + id).text(type);
 					$('#domain_' + id).fadeIn();
 					$('#type_' + id).fadeIn();
-					$('#save_domain_' + id).hide();
-					$('#cancel_domain_' + id).hide();
-					$('#edit_domain_' + id).fadeIn();
-					$('#delete_domain_' + id).fadeIn();
+					$('#domain_write_controls_'+id).hide();
+					$('#domain_read_controls_'+id).fadeIn();
 					$('#status_msg_txt_ajax').text(message);
 					$('#status_msg_ajax').fadeIn()
 				} else {
@@ -343,10 +257,19 @@
 			data: record,
 			cache: false,
 			statusCode: {
-				404: handle_ajax_404,
-				500: handle_ajax_500,
+				404: function () {
+					$('#error_msg_txt_ajax').text('Could not contact server');
+					$('#error_msg_ajax').fadeIn()
+				},
+				500: function () {
+					$('#error_msg_txt_ajax').text('A server-side error has occurred');
+					$('#error_msg_ajax').fadeIn()
+				}
 			},
-			error: handle_ajax_generic_error,
+			error: function () {
+				$('#error_msg_txt_ajax').text('A problem has occurred');
+				$('#error_msg_ajax').fadeIn()
+			},
 			success: function (json) {
 				var id = json.id;
 				var stat = json.stat;
@@ -360,7 +283,7 @@
 						count--;
 						$('input[id=slave_count]').val(count)
 					}
-					$('#display_master_' + id).hide();
+					$('#edit_master_addr_' + id).hide();
 					if (count == 0) {
 						$('.table_formatter_domains').width('540px');
 						$('.td_formatter_type').width('100px');
@@ -372,10 +295,8 @@
 					$('#type_' + id).text(type);
 					$('#domain_' + id).fadeIn();
 					$('#type_' + id).fadeIn();
-					$('#save_domain_' + id).hide();
-					$('#cancel_domain_' + id).hide();
-					$('#edit_domain_' + id).fadeIn();
-					$('#delete_domain_' + id).fadeIn()
+					$('#domain_write_controls_'+id).hide();
+					$('#domain_read_controls_'+id).fadeIn();
 				} else {
 					$('#error_msg_txt_ajax').text(message);
 					$('#error_msg_ajax').fadeIn()
@@ -384,189 +305,224 @@
 		})
 	})
 }); </script>
-<div id="mini_menu_bg">
-	<ul id="mini_menu">
-		<li><a id="display_add_button" class="display_add_button" href="#">Add domain</a></li>
-		<li><a id="display_add_bulk_button" href="#">Add bulk domains</a></li>
-	</ul>
-</div>
-<div id="display_add_block" class="display_hidden">
-	<span class="page_title">Add domain</span>
-	<a href="#" class="sub_menu"><img id="display_add_hide" class="sub_menu display_add_hide" src="/images/icons/application_delete.png" alt="Close" title="Close" class="alignright" /></a>
-	<a href="#" class="sub_menu"><img id="display_add_toggle" class="sub_menu" src="/images/icons/application_double.png" alt="Toggle" title="Toggle" class="alignright" /></a>
-	<div class="line_break"></div>
-	<div class="content_break"></div>
-	<div id="display_add">
-		<form id="add_domain_form" method="post" action="/domains/add">
-			<ul class="form ui-corner-all">
-				<li id="add_name">
-					<label>Domain</label>
-					<input id="add_domain_name" name="add_domain_name" type="text" value="" maxlength="255" class="ui-corner-all" />
-				</li>
-			<li id="add_type">
-				<label>Type</label>
-				<select id="add_domain_type" title="Select one" name="add_domain_type">
-					<option value="NATIVE" selected="selected">NATIVE</option>
-					<option value="MASTER">MASTER</option>
-					<option value="SLAVE">SLAVE</option>
-				</select>
-			</li>
-			<li id="add_master_addr_display" class="display_hidden">
-				<label>Master Address</label>	
-				<input id="add_master_addr" name="add_master_addr" class="ui-corner-all" maxlength="128" type="text" value="" title="Comma separated list of masters" />
-			</li>
-			<li id="add_template">
-				<label>Template</label>
-				<select id="add_domain_template" title="Select one" name="add_domain_template">
-				<option value="0" selected="selected">none</option>
-				[% FOREACH id IN templates.keys.sort %]
-				<option value="[% templates.$id.id %]">[% templates.$id.name %]</option>
-				[% END %]
-				</select>
-			</li>
-			<li>
-				<button class="add_domain_button">Save</button><button class="display_add_hide">Cancel</button>
-			</li>
-			</ul>
+
+<div class="container navbar">
+	<div class="navbar-inner">
+		<ul class="nav">
+			<li><a id="display_add_button" class="display_add_button" href="#">Add domain</a></li>
+			<li><a id="display_add_bulk_button" href="#">Add bulk domains</a></li>
+		</ul>
+		<!--<form class="navbar-search pull-right" method='post' action='/domains'>-->
+		<form class="navbar-form pull-right" method='post' action='/domains'>
+			<input type="text" class="search-query" name="domain_search" placeholder="Search domains ...">
+			<input type="submit" class="btn" value="Search" />
 		</form>
 	</div>
-	<div class="content_break"></div>
 </div>
-<div id="display_add_bulk_block" class="display_hidden">
-        <span class="page_title">Add bulk domains</span>
-        <a href="#" class="sub_menu"><img id="display_add_bulk_hide" class="sub_menu display_add_bulk_hide" src="/images/icons/application_delete.png" alt="Close" title="Close" class="alignright" /></a>
-        <a href="#" class="sub_menu"><img id="display_add_bulk_toggle" class="sub_menu" src="/images/icons/application_double.png" alt="Toggle" title="Toggle" class="alignright" /></a>
-        <div class="line_break"></div>
-        <div class="content_break"></div>
-        <div id="display_add_bulk">
-                <form id="add_bulk_domain_form" method="post" action="/domains/add/bulk">
-                        <ul class="form ui-corner-all">
-                                <li id="add_bulk_name">
-                                        <label>Domains <span id="help_info">Enter one domain per line</span></label>
-                                        <textarea id="add_bulk_domain_name" name="add_bulk_domain_name" class="ui-corner-all" ></textarea>
-                                </li>
-                                <li id="add_bulk_type">
-                                        <label>Type</label>
-                                        <select id="add_bulk_domain_type" title="Select one" name="add_bulk_domain_type">
-						<option value="NATIVE" selected="selected">NATIVE</option>
-                                                <option value="MASTER">MASTER</option>
-                                                <option value="SLAVE">SLAVE</option>
-                                        </select>
-                                </li>
-                                <li id="add_bulk_master_addr_display" class="display_hidden">
-                                        <label>Master Address</label>
-                                        <input id="add_bulk_master_addr" name="add_bulk_master_addr" class="ui-corner-all" type="text" maxlength="128" value="" />
-                                </li>
-                                <li id="add_bulk_template">
-                                        <label>Template</label>
-                                        <select id="add_bulk_domain_template" title="Select one" name="add_bulk_domain_template">
-						<option value="0" selected="selected">none</option>
-                                                [% FOREACH id IN templates.keys.sort %]
-                                                        <option value="[% templates.$id.id %]">[% templates.$id.name %]</option>
-                                                [% END %]
-                                        </select>
-                                </li>
-                                <li>
-                                        <input type="submit" value="Save" /><button class="display_add_bulk_hide">Cancel</button>
-                                </li>
-                        </ul>
-                </form>
-        </div>
-        <div class="content_break"></div>
-</div>
-<div id="display_domains_block">
-        <table id="block_table">
-                <tr>
-                        <td id="block_title">
-                                <span class="page_title">Domains</span>
-				<a href="#"><img src="/images/icons/database_add.png" class="display_add_button center" alt="Add domain" title="Add domain" /></a>
-                        </td>
-                        <td id="block_search">
-                                <form method="post" action="/domains">
-                                        <input type="text" name="domain_search" class="ui-corner-all" maxlength="255" />&nbsp;<input type="submit" value="Search" />
-                                </form>
-                        </td>
-                        <td id="block_util">
-				<a href="#" class="sub_menu"><img id="display_domains_toggle" class="sub_menu" src="/images/icons/application_double.png" alt="Toggle" title="Toggle" class="alignright" /></a>
-                        </td>
-                </tr>
-        </table>
-	<div class="line_break"></div>
-	<div id="display_domains">
-		[% colour = 'table_formatter_color2' %]
-		<table class="table_formatter">
-			<tr>
-                                <td>
-                                        <div class="table_formatter table_formatter_header table_formatter_domains ui-corner-all">
-                                                <span>Zone</span>
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_header table_formatter_type ui-corner-all">
-                                                <span>Type</span>
-                                        </div>
-                                </td>
-			</tr>
-		[% FOREACH id IN domains.keys.sort %]
-		[% IF colour == 'table_formatter_color1' %]
-    			[% colour = 'table_formatter_color2' %]
-		[% ELSE %]
-    			[% colour = 'table_formatter_color1' %]
-		[% END %]
- 			<tr id="row_domain_[% domains.$id.id %]">
-  				<td>
-   					<div class="table_formatter table_formatter_domains ui-corner-all [% colour %]">
-						<a href="/domains/edit/records/id/[% domains.$id.id %]" id="domain_[% domains.$id.id %]">[% domains.$id.name %]</a>
-						<input id="edit_name_[% domains.$id.id %]" name="edit_name" class="display_hidden ui-corner-all" type="text" maxlength="255" value="[% domains.$id.name %]" />
-   					</div>
-   				</td>
-   				<td id="td_formatter_type">
-   					<div class="table_formatter table_formatter_type ui-corner-all [% colour %]">
-        					<span id="type_[% domains.$id.id %]">[% domains.$id.type %]</span>
-						<select id="edit_type_[% domains.$id.id %]" edit="[% domains.$id.id %]" class="edit_type display_hidden" title="Select one" name="edit_type">
-							<option value="NATIVE">NATIVE</option>
-                                                	<option value="MASTER">MASTER</option>
-                                                       	<option value="SLAVE">SLAVE</option>
-                                                </select>
-                                                <span id="display_master_[% domains.$id.id %]" class="display_hidden display_master">
-                                                        Master Addr <input id="master_addr_[% domains.$id.id %]" name="master_addr" class="ui-corner-all" type="text" maxlength="128" value="" />
-                                                </span>
-   					</div>
-  				</td>
-  				<td>
-   					<div class="table_formatter table_formatter_links ui-corner-all [% colour %]">
-          					<a href="#"><img id="edit_domain_[% domains.$id.id %]" class="edit_domain_button" edit="[% domains.$id.id %]" src="/images/icons/database_edit.png" class="center" alt="Edit" title="Edit" /></a>
-          					<a href="/domains/delete/id/[% domains.$id.id %]" class="confirm_link"><img id="delete_domain_[% domains.$id.id %]" delete="[% domains.$id.id %]" src="/images/icons/database_delete.png" class="center" alt="Delete" title="Delete" /></a>
-						<a href="#"><img id="save_domain_[% domains.$id.id %]" class="save_domain_button display_hidden" save="[% domains.$id.id %]" src="/images/icons/table_save.png" class="center" alt="Save" title="Save" /></a>
-						<a href="#"><img id="cancel_domain_[% domains.$id.id %]" class="cancel_domain_button display_hidden" cancel="[% domains.$id.id %]" src="/images/icons/cancel.png" class="center" alt="Cancel" title="Cancel" /></a>
-   					</div>
-  				</td>
- 			</tr>
-		[% END %]
-		</table>
-        [% IF lastpage > 1 %]
-                <div id="page_sort">
-                        <div class="content_break"></div>
-                        <a href="/domains?p=1&r=[% results %]">&#xab; First</a>
-                        <a href="/domains?p=[% previouspage %]&r=[% results %]">&#x8B; Back</a>
-                        <span>page [% page %] of [% lastpage %]</span>
-                        <a href="/domains?p=[% nextpage %]&r=[% results %]">Next &#x9b;</a>
-                        <a href="/domains?p=[% lastpage %]&r=[% results %]">Last &#xbb;</a>
-                        <div id="results_per_page">
-                                <span>Results per page</span>
-                                <a href="/domains?p=[% page %]&r=25">25</a>
-                                <a href="/domains?p=[% page %]&r=50">50</a>
-                                <a href="/domains?p=[% page %]&r=100">100</a>
-                        </div>
-                </div>
-        [% END %]
+
+<div id="display_add_block" class="container hide">
+	<div class="row">
+		<div class="span6"><strong>Add domain</strong></div>
+		<div class="span6">
+			<div class="btn-group pull-right">
+				<a href="#" id="display_add_hide" class="btn display_add_hide" alt="Close" title="Close" /><i class="icon-remove"></i></a>
+				<a href="#" id="display_add_toggle" class="btn" alt="Toggle" title="Toggle" /><i class="icon-eye-open"></i></a>
+			</div>
+		</div>
 	</div>
-	<div class="content_break"></div>
+	<div class="row" id="display_add">
+		<form id="add_domain_form" method="post" action="/domains/add" class="form-horizontal">
+			<div class="control-group" id="add_name">
+				<label class="control-label">Domain</label>
+				<div class="controls">
+					<input id="add_domain_name" name="add_domain_name" type="text" value="" />
+				</div>
+			</div>
+			<div class="control-group" id="add_type">
+				<label class="control-label">Type</label>
+				<div class="controls">
+					<select id="add_domain_type" title="Select one" name="add_domain_type">
+						<option value="NATIVE" selected="selected">NATIVE</option>
+						<option value="MASTER">MASTER</option>
+						<option value="SLAVE">SLAVE</option>
+					</select>
+				</div>
+			</div>
+			<div id="add_master_addr_display" class="control-group hide">
+				<label class="control-label">Master Address</label>
+				<div class="controls">
+					<input id="add_master_addr" name="add_master_addr" class=""  type="text" value="" title="Comma separated list of masters" />
+				</div>
+			</div>
+			<div id="add_template" class="control-group">
+				<label class="control-label">Template</label>
+				<div class="controls">
+					<select id="add_domain_template" title="Select one" name="add_domain_template">
+						<option value="0" selected="selected">none</option>
+						[% FOREACH id IN templates.keys.sort %]
+						<option value="[% templates.$id.id %]">[% templates.$id.name %]</option>
+						[% END %]
+					</select>
+				</div>
+			</div>
+			<div class="form-actions">	
+				<input type="submit" class="btn btn-primary" value="Add" />
+				<button class="display_add_hide" class="btn">Cancel</button>
+			</div>
+		</form>
+	</div>
 </div>
-<div id="confirm_action" title="Confirmation" class="display_hidden">
+
+<div id="display_add_bulk_block" class="container hide">
+	<div class="row">
+		<div class="span6"><strong>Add bulk domains</strong></div>
+		<div class="span6">
+			<div class="btn-group pull-right">
+				<a href="#" id="display_add_bulk_hide" class="btn display_add_bulk_hide" alt="Close" title="Close" /><i class="icon-remove"></i></a>
+				<a href="#" id="display_add_bulk_toggle" class="btn" alt="Toggle" title="Toggle" /><i class="icon-eye-open"></i></a>
+			</div>
+		</div>
+	</div>
+	<div class="row" id="display_add_bulk">
+		<form id="add_bulk_domain_form" method="post" action="/domains/add/bulk" class="form-horizontal">
+			<div class="control-group" id="add_bulk_name">
+				<label class="control-label">Domains</label>
+				<div class="controls">
+					<textarea id="add_bulk_domain_name" name="add_bulk_domain_name" class="input-xxlarge"></textarea>
+					<span class="help-block">Enter one domain per line</span>
+				</div>
+			</div>
+			<div class="control-group" id="add_bulk_type">
+				<label class="control-label">Type</label>
+				<div class="controls">
+					<select id="add_bulk_domain_type" title="Select one" name="add_bulk_domain_type">
+						<option value="NATIVE" selected="selected">NATIVE</option>
+						<option value="MASTER">MASTER</option>
+						<option value="SLAVE">SLAVE</option>
+					</select>
+				</div>
+			</div>
+			<div class="control-group hide" id="add_bulk_master_addr_display">
+				<label class="control-label">Master address</label>
+				<div class="controls">
+					<input id="add_bulk_master_addr" name="add_bulk_master_addr" class="" type="text"  value="" />
+					<span class="help-block">Address or comma separated list of addresses</span>
+				</div>
+			</div>
+			<div class="control-group" id="add_bulk_template">
+				<label class="control-label">Template</label>
+				<div class="controls">
+					<select id="add_bulk_domain_template" title="Select one" name="add_bulk_domain_template">
+						<option value="0" selected="selected">~ none ~</option>
+						[% FOREACH id IN templates.keys.sort %]
+						<option value="[% templates.$id.id %]">[% templates.$id.name %]</option>
+						[% END %]
+					</select>
+				</div>
+			</div>
+			<div class="form-actions">
+				<input type="submit" value="Add" class="btn btn-primary" />
+				<button class="display_add_bulk_hide btn">Cancel</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div id="display_domains_block" class="container">
+	<div class="row">
+		<div class="span6"><strong>Domains</strong></div>
+		<div class="span6">
+			<div class="btn-group pull-right">
+				<a href="#" class="btn display_add_button"><i class="icon-plus"></i></a>
+				<a href="#" class="btn" id="display_domains_toggle"><i class="icon-eye-open"></i></a>
+			</div>
+		</div>
+	</div>
+	<div id="display_domains" class="row">
+		<div class="span12">
+			<table class="table table-hover table-striped">
+				<thead>
+				<tr>
+					<th>Zone</th>
+					<th>Type</th>
+					<th>Masters</th>
+					<th class="table_col_controls"></th>
+				</tr>
+				</thead>
+				<tbody>
+				[% FOREACH id IN domains.keys.sort %]
+				<tr>
+					<td>
+						<a href="/domains/edit/records/id/[% domains.$id.id %]" id="domain_[% domains.$id.id %]">[% domains.$id.name %]</a>
+						<input id="edit_name_[% domains.$id.id %]" name="edit_name" class="hide " type="text"  value="[% domains.$id.name %]" />
+					</td>
+					<td>
+						<span id="type_[% domains.$id.id %]">[% domains.$id.type %]</span>
+						<select id="edit_type_[% domains.$id.id %]" edit="[% domains.$id.id %]" class="edit_type hide" title="Select one" name="edit_type">
+							<option value="NATIVE">NATIVE</option>
+							<option value="MASTER">MASTER</option>
+							<option value="SLAVE">SLAVE</option>
+						</select>
+					<td>
+						<span id="display_master_[% domains.$id.id %]" class="hide display_master">[% domains.$id.master %]</span>
+						<input id="edit_master_addr_[% domains.$id.id %]" name="master_addr" class="display_master hide" type="text"  value="[% domains.$id.master %]" />
+					</td>
+					<td>
+						<div class="">
+							<div class="btn-group" id="domain_read_controls_[% domains.$id.id %]">
+								<a href="#" id="edit_domain_[% domains.$id.id %]" class="btn btn-mini edit_domain_button" edit="[% domains.$id.id %]" alt="Edit" title="Edit" /><i class="icon-pencil"></i></a>
+								<a href="/domains/delete/id/[% domains.$id.id %]" class="btn btn-mini confirm_delete_domain btn-danger" id="delete_domain_[% domains.$id.id %]" delete="[% domains.$id.id %]" alt="Delete" title="Delete" /><i class="icon-trash icon-white"></i></a>
+							</div>
+							<div class="btn-group hide" id="domain_write_controls_[% domains.$id.id %]">
+								<a href="#" id="save_domain_[% domains.$id.id %]" class="btn btn-mini save_domain_button" save="[% domains.$id.id %]" alt="Save" title="Save" /><i class="icon-ok"></i></a>
+								<a href="#" id="cancel_domain_[% domains.$id.id %]" class="btn btn-mini cancel_domain_button" cancel="[% domains.$id.id %]" alt="Cancel" title="Cancel" /><i class="icon-ban-circle"></i></a>
+							</div>
+						</div>
+					</td>
+				</tr>
+			[% END %]
+			</table>
+			[% IF lastpage > 1 %]
+					<div id="page_sort">
+							<div class="content_break"></div>
+							<a href="/domains?p=1&r=[% results %]">&#xab; First</a>
+							<a href="/domains?p=[% previouspage %]&r=[% results %]">&#x8B; Back</a>
+							<span>page [% page %] of [% lastpage %]</span>
+							<a href="/domains?p=[% nextpage %]&r=[% results %]">Next &#x9b;</a>
+							<a href="/domains?p=[% lastpage %]&r=[% results %]">Last &#xbb;</a>
+							<div id="results_per_page">
+									<span>Results per page</span>
+									<a href="/domains?p=[% page %]&r=25">25</a>
+									<a href="/domains?p=[% page %]&r=50">50</a>
+									<a href="/domains?p=[% page %]&r=100">100</a>
+							</div>
+					</div>
+			[% END %]
+		</div>
+	</div>
+</div>
+
+<div id="confirm_action" title="Confirmation" class="modal fade hide">
   This action will permanently delete this domain and all of its records.<br><br>Are you sure?
 </div>
+
+<div id="confirm_action_delete_domain_dialog" title="Confirmation" class="fade modal hide">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h3>Delete domain</h3>
+	</div>
+	<div class="modal-body">
+		<p>This action will permanently delete following domain:</p>
+		<div class="well" id="domain_to_delete"></div>
+		<p>Are you sure?</p>
+	</div>
+	<div class="modal-footer">
+		<a href="#" class="btn" data-dismiss="modal">Close</a>
+		<a href="#" class="btn btn-danger" id="confirm_action_delete_domain_button">Delete</a>
+	</div>
+</div>
+
 [% IF flash.detail %]
-        <div id="detail_message" class="flash_detail display_hidden" Title="Details">[% flash.detail %]</div>
+        <div id="detail_message" class="flash_detail hide" Title="Details">[% flash.detail %]</div>
 [% END %]
 <input type="hidden" id="slave_count" value="0" />
