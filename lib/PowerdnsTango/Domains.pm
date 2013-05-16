@@ -366,7 +366,7 @@ post '/domains/add/bulk' => sub
 	return redirect '/domains';
 };
 
-ajax '/domains/delete/id/:id' => sub {
+get '/domains/delete/id/:id' => sub {
 	my $id = params->{id} || undef;
 
 	return { stat => 'fail', message => 'Missing domain ID' }
@@ -380,7 +380,9 @@ ajax '/domains/delete/id/:id' => sub {
 	database->quick_delete('records', { domain_id => $id });
 	database->quick_delete('domains_acl_tango', { domain_id => $id });
 
-	return { stat => 'ok', id => $id, message => "Domain deleted" };
+	# return { stat => 'ok', id => $id, message => "Domain deleted" };
+	flash message => "Domain deleted";
+	return redirect '/domains';
 };
 
 ajax '/domains/update' => sub {
