@@ -47,13 +47,13 @@
 						<li id="nav_menu_templates"><a href="/templates">Templates</a></li>
 						<li class="dropdown">
 						[% IF session.user_type == 'admin' %]
-						<li class="dropdown">
+						<li class="dropdown" id="nav_menu_admin">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
 							<ul class="dropdown-menu">
 								<li><a href="/admin">Global Settings</a></li>
 								<li><a href="/admin">Default SOA</a></li>
 								<li class="divider"></li>
-								<li><a href="/users">Users</a></li>
+								<li><a href="/admin/users">Users</a></li>
 								<li><a href="/supermasters">Supermasters</a></li>
 							</ul>
 						</li>

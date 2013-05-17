@@ -11,9 +11,67 @@ use Data::Page;
 use Email::Valid;
 use PowerdnsTango::Acl qw(user_acl);
 use PowerdnsTango::Validate::Records qw(check_soa is_domain);
+use Scalar::Util qw(looks_like_number);
 
 our $VERSION = '0.2';
 
+any ['get', 'post'] => '/admin/users' => sub {
+	my $perm = user_acl;
+	my $load_page = params->{p} || 1;
+	my $results_per_page = params->{r} || 25;
+	my $search = params->{user_search} || 0;
+	my $sth;
+	my $page;
+	my $display;
+
+	if ($perm == 1) {
+		flash error => "Permission denied";
+		return redirect '/';
+	}
+
+	if (request->method() eq "POST" && $search ne '0') {
+		$sth = database->prepare('select count(id) as count from users_tango where (login like ? or name like ? or email like ? or type like ? or status like ?)');
+		$sth->execute("%$search%", "%$search%", "%$search%", "%$search%", "%$search%");
+		my $count = $sth->fetchrow_hashref;
+
+		$page = Data::Page->new();
+		$page->total_entries($count->{'count'});
+		$page->entries_per_page($results_per_page);
+		$page->current_page($load_page);
+
+		$display = ($page->entries_per_page * ($page->current_page - 1));
+		$load_page = $page->last_page if ($load_page > $page->last_page);
+		$load_page = $page->first_page if ($load_page == 0);
+
+		$sth = database->prepare('select * from users_tango where (login like ? or name like ? or email like ? or type like ? or status like ?) limit ? offset ?');
+		$sth->execute("%$search%", "%$search%", "%$search%", "%$search%", "%$search%", $page->entries_per_page, $display);
+
+
+		flash error => "User search found no match" 
+			if ($count->{'count'} == 0);
+		flash message => "User search found $count->{'count'} matches" 
+			if ($count->{'count'} >= 1);
+	}
+	else {
+		$sth = database->prepare('select count(id) as count from users_tango');
+		$sth->execute();
+		my $count = $sth->fetchrow_hashref;
+
+		$page = Data::Page->new();
+		$page->total_entries($count->{'count'});
+		$page->entries_per_page($results_per_page);
+		$page->current_page($load_page);
+
+		$display = ($page->entries_per_page * ($page->current_page - 1));
+		$load_page = $page->last_page if ($load_page > $page->last_page);
+		$load_page = $page->first_page if ($load_page == 0);
+
+		$sth = database->prepare('select * from users_tango limit ? offset ?');
+		$sth->execute($page->entries_per_page, $display);
+	}
+
+	template 'admin-users', { users => $sth->fetchall_hashref('id'), page => $load_page, results => $results_per_page, previouspage => ($load_page - 1), nextpage => ($load_page + 1), lastpage => $page->last_page, };
+};
 
 any ['get', 'post'] => '/admin' => sub
 {
@@ -112,7 +170,7 @@ post '/admin/add/user' => sub
         {
                 flash error => "Permission denied";
 
-                return redirect '/';
+                return redirect '/admin/users';
         }
 
 
@@ -123,7 +181,7 @@ post '/admin/add/user' => sub
 		{
 			flash error => "Add account failed, password mismatch";	
 
-			return redirect '/admin';
+			return redirect '/admin/users';
 		}
 
 
@@ -131,7 +189,7 @@ post '/admin/add/user' => sub
 		{
 			flash error => "Add account failed, $email is not a valid email address";
 
-			return redirect '/admin';
+			return redirect '/admin/users';
 		}
 
 
@@ -172,25 +230,19 @@ post '/admin/add/user' => sub
 	}
 
 
-	return redirect '/admin';
+	return redirect '/admin/users';
 };
 
 
-get '/admin/delete/user/id/:id' => sub
-{
+get '/admin/delete/user/id/:id' => sub {
 	my $perm = user_acl;
 	my $del_user_id  = params->{id} || 0;
 	my $user_id = session 'user_id';
 
+	return { stat => 'fail', message => 'Permission denied' }
+        if ($perm == 1);
 
-        if ($perm == 1)
-        {
-                return { stat => 'fail', message => 'Permission denied' };
-        }
-
-
-	if ($del_user_id != 0 && $del_user_id != $user_id)
-	{
+	if ($del_user_id != 0 && $del_user_id != $user_id) {
 		database->quick_delete('domains_acl_tango', { user_id => $del_user_id });
 		database->quick_delete('templates_acl_tango', { user_id => $del_user_id });
 		database->quick_delete('signup_activation_tango', { user_id => $del_user_id });
@@ -198,17 +250,14 @@ get '/admin/delete/user/id/:id' => sub
 
 		flash message => "Account deleted";
 	}
-	elsif ($del_user_id == $user_id)
-	{
-		flash error => "Account delete failed, can't delete yourself";
+	elsif ($del_user_id == $user_id) {
+		flash error => "Account delete failed, you can't delete yourself";
 	}
-	else
-	{
+	else {
 		flash error => "Account delete failed";		
 	}
 
-
-	return redirect '/admin';
+	return redirect '/admin/users';
 };
 
 
@@ -267,22 +316,18 @@ ajax '/admin/save/soa' => sub
 };
 
 
-ajax '/admin/get/user' => sub
-{
-        my $user_id = params->{id} || 0;
-        my $perm = user_acl;
+ajax '/admin/get/user' => sub {
+	my $user_id = params->{id} || 0;
+	my $perm = user_acl;
 
+	return { stat => 'fail', message => 'Permission denied' }
+		if ($perm == 1);
 
-        if ($perm == 1)
-        {
-                return { stat => 'fail', message => 'Permission denied' };
-        }
-
+	return { stat => 'fail', message => 'Invalid user ID' }
+		if (!looks_like_number($user_id) or $user_id == 0);
 
 	my $user = database->quick_select('users_tango', { id => $user_id });
-
-
-        return { stat => 'ok', id => $user_id, login => $user->{login}, name => $user->{name}, email => $user->{email}, type => $user->{type}, user_stat => $user->{status}, domain_limit => $user->{domain_limit}, template_limit => $user->{template_limit} };
+	return { stat => 'ok', id => $user_id, login => $user->{login}, name => $user->{name}, email => $user->{email}, type => $user->{type}, user_stat => $user->{status}, domain_limit => $user->{domain_limit}, template_limit => $user->{template_limit} };
 };
 
 
