@@ -1,9 +1,5 @@
 <script> $(function () {
-	$('input:submit, button').button();
-	$('#nav_menu_admin').addClass('nav_menu_active');
-	$('img').tipTip({
-		delay: '800'
-	});
+	$('#nav_menu_admin').addClass('active');
 	$('.display_reset_password_button').click(function (e) {
 		e.preventDefault();
 		$('.flash').fadeOut();
@@ -246,182 +242,177 @@
 			}
 		})
 	})
-}); </script>
-<div id="mini_menu_bg">
-        <ul id="mini_menu">
-                <li><a id="display_reset_password_button" class="display_reset_password_button" href="#">Reset password</a></li>
-		<li><a id="display_domain_owner_button" class="display_domain_owner_button" href="#">Domain ownership</a></li>
-        </ul>
+});
+</script>
+
+<div class="container">
+	<h3>[% login %]</h3>
 </div>
 
-<div id="display_reset_password_block" class="display_hidden">
-        <span class="page_title">Reset password</span>
-	<a href="#" class="sub_menu"><img id="display_reset_password_hide" class="sub_menu display_reset_password_button" src="/images/icons/application_delete.png" alt="Close" title="Close" class="alignright" /></a>
-        <a href="#" class="sub_menu"><img id="display_reset_password_toggle" class="sub_menu" src="/images/icons/application_double.png" alt="Toggle" title="Toggle" class="alignright" /></a>
-        <div class="line_break"></div>
-        <div class="content_break"></div>
-        <div id="display_reset_password">
-	<form id="password_reset" method="post" action="/admin/user/id/[% user_id %]/reset/password">
-   		<ul class="form ui-corner-all">
-         		<li>
-                  		<label>Password</label>
-                  		<input name="password1" type="password" maxlength="30" value=""  class="ui-corner-all" />
-          		</li>
-          		<li id="password">
-                  		<label>Confirm password</label>
-                  		<input name="password2" type="password" maxlength="30" class="ui-corner-all" />
-          		</li>
-          		<li id="submit">
-                  		<input type="submit" value="Save"/><button class="display_reset_password_button">Cancel</button>
-          		</li>
-    		</ul>
+<div class="container navbar">
+	<div class="navbar-inner">
+		<ul class="nav">
+			<li><a href="/admin/users"><i class="icon-arrow-left"></i></a></li>
+			<li class="divider-vertical"></li>
+			<li><a id="display_reset_password_button" class="display_reset_password_button" href="#">Reset password</a></li>
+			<li><a id="display_domain_owner_button" class="display_domain_owner_button" href="#">Domain ownership</a></li>
+		</ul>
+	</div>
+</div>
+
+<div id="display_reset_password_block" class="hide container">
+	<div class="row">
+		<div class="span6"><strong>Reset password</strong></div>
+		<div class="span6">
+			<div class="btn-group pull-right">
+				<a href="#" class="btn display_reset_password_button" alt="Close" title="Close" /><i class="icon-remove"></i></a>
+				<a href="#" id="display_reset_password_toggle" class="btn" alt="Toggle" title="Toggle" /><i class="icon-eye-open"></i></a>
+			</div>
+		</div>
+	</div>
+	<div class="row" id="display_add_bulk">
+		<form id="password_reset" method="post" action="/admin/user/id/[% user_id %]/reset/password" class="form-horizontal">
+			[% IF session.user_id ==  user_id %]
+			<div class="control-group">
+				<label class="control-label">Old password</label>
+				<div class="controls">
+					<input name="password" type="password" value=""  class="" />
+				</div>
+			</div>
+			[% END %]
+			<div class="control-group">
+				<label class="control-label">Password</label>
+				<div class="controls">
+					<input name="password1" type="password" value=""  class="" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">Confirm password</label>
+				<div class="controls">
+					<input name="password2" type="password" class="" />
+				</div>
+			</div>
+			<div class="form-actions">
+				<input type="submit" class="btn btn-primary" value="Save"/>
+				<button class="display_reset_password_button btn">Cancel</button>
+			</div>
 	</form>
 	</div>
-        <div class="content_break"></div>
 </div>
 
 
-<div id="display_domain_owner_block" class="display_hidden">
-        <span class="page_title">Domain ownership</span>
-        <a href="#" class="sub_menu"><img id="display_domain_owner_hide" class="sub_menu display_domain_owner_button" src="/images/icons/application_delete.png" alt="Close" title="Close" class="alignright" /></a>
-        <a href="#" class="sub_menu"><img id="display_domain_owner_toggle" class="sub_menu" src="/images/icons/application_double.png" alt="Toggle" title="Toggle" class="alignright" /></a>
-        <div class="line_break"></div>
-        <div class="content_break"></div>
-        <div id="display_domain_owner">
-		<form id="domain_owner" method="post" action="/admin/user/id/[% user_id %]/update/ownership">
-			<ul class="form ui-corner-all">
-				<li>
-					<label>Owned by [% login %] <span class="help_info">Select domains to remove user ownership</span></label>
-					<SELECT id="domain_owner" MULTIPLE SIZE=10 name="domain_owner">
-                        			[% FOREACH id IN user_domains.keys.sort %]
-                                			<option value="[% user_domains.$id.id %]">[% user_domains.$id.name %]</option>
-                                		[% END %]
-					</SELECT>
-				</li>
-                                <li>
-                                        <label>All domains <span class="help_info">Select domains to give user ownership</span></label>
-                                        <SELECT id="domain_system" MULTIPLE SIZE=10 name="domain_system">
-                                                [% FOREACH id IN system_domains.keys.sort %]
-                                                        <option value="[% system_domains.$id.id %]">[% system_domains.$id.name %]</option>
-                                                [% END %]
-                                        </SELECT>
-                                </li>
-                                <li id="submit">
-                                        <input type="submit" value="Save"/><button class="display_domain_owner_button">Cancel</button>
-                                </li>
-			</ul>
-		</form>
-        </div>
-        <div class="content_break"></div>
+<div id="display_domain_owner_block" class="hide container">
+	<div class="row">
+		<div class="span6"><strong>Domain ownership</strong></div>
+		<div class="span6">
+			<div class="btn-group pull-right">
+				<a href="#" class="btn display_domain_ownership_button" alt="Close" title="Close" /><i class="icon-remove"></i></a>
+				<a href="#" id="display_domain_ownership_toggle" class="btn" alt="Toggle" title="Toggle" /><i class="icon-eye-open"></i></a>
+			</div>
+		</div>
+	</div>
+	<form id="domain_owner" method="post" action="/admin/user/id/[% user_id %]/update/ownership">
+		<div class="row">
+			<div class="span4">
+				<label>Owned by [% login %]</label>
+				<select id="domain_owner" multiple="multiple" size="10" name="domain_owner">
+					[% FOREACH id IN user_domains.keys.sort %]
+					<option value="[% user_domains.$id.id %]">[% user_domains.$id.name %]</option>
+					[% END %]
+				</select>
+				<span class="help-block">Select domains to remove user ownership (while holding down Ctrl key)</span>
+			</div>
+			<div class="span4">
+				<label>All domains</label>
+				<select id="domain_system" multiple="multiple" size="10" name="domain_system">
+					[% FOREACH id IN system_domains.keys.sort %]
+					<option value="[% system_domains.$id.id %]">[% system_domains.$id.name %]</option>
+					[% END %]
+				</select>
+				<span class="help-block">Select domains to give user ownership (while holding down Ctrl key)</span>
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-actions">
+				<input type="submit" class="btn btn-primary" value="Save"/>
+				<button class="display_domain_owner_button btn">Cancel</button>
+			</div>
+		</div>
+	</form>
 </div>
-<div id="display_users_block">
-        <span class="page_title">Account [% login %]</span>
-        <a href="#"><img id="edit_user" edit="[% user_id %]" src="/images/icons/database_edit.png" class="center" alt="Edit" title="Edit" /></a>
-        <a href="#"><img id="save_user" class="display_hidden" save="[% user_id %]" src="/images/icons/table_save.png" class="center" alt="Save" title="Save" /></a>
-        <a href="#"><img id="cancel_user" class="display_hidden" cancel="[% user_id %]" src="/images/icons/cancel.png" class="center" alt="Cancel" title="Cancel" /></a>
-        <a href="#" class="sub_menu"><img id="display_users_toggle" class="sub_menu" src="/images/icons/application_double.png" alt="Toggle" title="Toggle" class="alignright" /></a>
-        <div class="line_break"></div>
-        <div class="content_break"></div>
-        <div id="display_users">
-                <table class="table_formatter">
-                        <tr>
-                                <td>
-                                        <div class="table_formatter table_formatter_label ui-corner-all table_formatter_color1">
-                                                <span>Username</span>
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_soa ui-corner-all table_formatter_color1">
-                                                <span id="login">[% login %]</span>
-                                                <input id="edit_login" class="display_hidden ui-corner-all" type="text" maxlength="30" value="[% login %]" name="edit_login" />
-                                        </div>
-                                </td>
-                        </tr>
-                        <tr>
-                                <td>
-                                        <div class="table_formatter table_formatter_label ui-corner-all table_formatter_color2">
-                                                <span>Name</span>
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_soa ui-corner-all table_formatter_color2">
-                                                <span id="name">[% name %]</span>
-                                                <input id="edit_name" class="display_hidden ui-corner-all" type="text" maxlength="255" value="[% name %]" name="edit_name" />
-                                        </div>
-                                </td>
-                        </tr>
-                        <tr>
-                                <td>
-                                        <div class="table_formatter table_formatter_label ui-corner-all table_formatter_color1">
-                                                <span>Email</span>
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_soa ui-corner-all table_formatter_color1">
-                                                <span id="email">[% email %]</span>
-                                                <input id="edit_email" class="display_hidden ui-corner-all" type="text" maxlength="255" value="[% email %]" name="edit_email" />
-                                        </div>
-                                </td>
-                        </tr>
-                        <tr>
-                                <td>
-                                        <div class="table_formatter table_formatter_label ui-corner-all table_formatter_color2">
-                                                <span>Type</span>
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_soa ui-corner-all table_formatter_color2">
-                                                <span id="type">[% type %]</span>
-                                                <select id="edit_type" class="display_hidden" title="Select one" name="edit_type">
-                                                        <option value="admin">admin</option>
-                                                        <option value="user">user</option>
-                                                </select>
-                                        </div>
-                                </td>
-                        </tr>
-                        <tr>
-                                <td>
-                                        <div class="table_formatter table_formatter_label ui-corner-all table_formatter_color1">
-                                                <span>Status</span>
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_soa ui-corner-all table_formatter_color1">
-                                                <span id="status">[% status %]</span>
-                                                <select id="edit_status" class="display_hidden" title="Select one" name="edit_status">
-                                                        <option value="enabled">enabled</option>
-                                                        <option value="disabled">disabled</option>
-                                                </select>
-                                        </div>
-                                </td>
-			</tr>
-			<tr>
-                                <td>
-                                        <div class="table_formatter table_formatter_label ui-corner-all table_formatter_color2">
-                                                <span>Domain limit</span>
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_soa ui-corner-all table_formatter_color2">
-                                                <span id="domain_limit">[% domain_limit %]</span>
-						<input id="edit_domain_limit" class="display_hidden ui-corner-all" type="text" maxlength="255" value="[% domain_limit %]" name="edit_domain_limit" />	
-                                        </div>
-                                </td>
-                        </tr>
-                        <tr>
-                                <td>
-                                        <div class="table_formatter table_formatter_label ui-corner-all table_formatter_color1">
-                                                <span>Template limit</span>
-                                        </div>
-                                </td>
-                                <td>
-                                        <div class="table_formatter table_formatter_soa ui-corner-all table_formatter_color1">
-                                                <span id="template_limit">[% template_limit %]</span>
-                                                <input id="edit_template_limit" class="display_hidden ui-corner-all" type="text" maxlength="255" value="[% template_limit %]" name="edit_domain_limit" />
-                                        </div>
-                                </td>
-                        </tr>
-		</table>
-        </div>
-        <div class="content_break"></div>
+
+<div id="display_users_block" class="container">
+	<div class="row">
+		<div class="btn-toolbar pull-right">
+			<div class="btn-group">
+				<a href="#" id="edit_user" edit="[% user_id %]" class="btn" alt="Edit" title="Edit" /><i class="icon-pencil"></i></a>
+			</div>
+			<div class="btn-group">
+				<a href="#" id="save_user" class="hide btn btn-primary" save="[% user_id %]" alt="Save" title="Save" /><i class="icon-ok icon-white"></i></a>
+				<a href="#" id="cancel_user" class="hide btn" cancel="[% user_id %]" alt="Cancel" title="Cancel" /><i class="icon-ban-circle"></i></a>
+			</div>
+		</div>
+	</div>
+	<div id="display_users" class="row">
+		<div class="span12">
+			<table class="table">
+			<tbody>
+				<tr>
+					<td>ID</td>
+					<td>
+						<span id="login">[% login %]</span>
+						<input id="edit_login" class="hide " type="text" value="[% login %]" name="edit_login" />
+					</td>
+				</tr>
+				<tr>
+					<td>Name</td>
+					<td>
+						<span id="name">[% name %]</span>
+						<input id="edit_name" class="hide " type="text" value="[% name %]" name="edit_name" />
+					</td>
+				</tr>
+				<tr>
+					<td>E-mail</td>
+					<td>
+						<span id="email">[% email %]</span>
+						<input id="edit_email" class="hide " type="text" value="[% email %]" name="edit_email" />
+					</td>
+				</tr>
+				<tr>
+					<td>Type</td>
+					<td>
+						<span id="type">[% type %]</span>
+						<select id="edit_type" class="hide" title="Select one" name="edit_type">
+							<option value="admin">admin</option>
+							<option value="user">user</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td>Status</td>
+					<td>
+						<span id="status">[% status %]</span>
+						<select id="edit_status" class="hide" title="Select one" name="edit_status">
+							<option value="enabled">enabled</option>
+							<option value="disabled">disabled</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td>Domain limit</td>
+					<td>
+						<span id="domain_limit">[% domain_limit %]</span>
+						<input id="edit_domain_limit" class="hide " type="text" value="[% domain_limit %]" name="edit_domain_limit" />	
+					</td>
+				</tr>
+				<tr>
+					<td>Template limit</td>
+					<td>
+						<span id="template_limit">[% template_limit %]</span>
+						<input id="edit_template_limit" class="hide " type="text" value="[% template_limit %]" name="edit_domain_limit" />
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
 </div>
