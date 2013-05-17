@@ -1,109 +1,58 @@
-<script> $(function () {
-	$('input:submit, button').button();
+<script>
+$(function () {
 	$('#nav_menu_home').addClass('nav_menu_active');
-	$('img').tipTip({
-		delay: '800'
-	});
-	$(".portlet").addClass("ui-widget ui-widget-content ui-helper-clearfix ui-corner-all").find(".portlet_header").addClass("ui-widget-header ui-corner-all").prepend("<span class='ui-icon ui-icon-minusthick'></span>").end().find(".portlet_content");
-	$(".portlet_header .ui-icon").click(function () {
-		$(this).toggleClass("ui-icon-minusthick").toggleClass("ui-icon-plusthick");
-		$(this).parents(".portlet:first").find(".portlet_content").toggle()
-	});
-	$(".home_column").disableSelection()
-}); </script>
-<div id="mini_menu_bg">
-        <ul id="mini_menu">
-                <li></li>
-                <li></li>
-        </ul>
+});
+</script>
+	
+<div class="container" id="title_view_block">
+<h2>Home</h2>
 </div>
-<span class="page_title">Home</span>
-<div class="line_break"></div>
-<div class="content_break"></div>
-<div id="display_home_block">
-	<div class="home_column">
-		<div class="portlet">
-			<div class="portlet_header">Announcements</div>
-			<div class="portlet_content">
-				<div class="portlet_text ui-corner-all">
-					[% motd %]
-				</div>
-			</div>
-		</div>
-		<div class="portlet">
-			<div class="portlet_header">Usage</div>
-			<div class="portlet_content">
-				<div class="portlet_text ui-corner-all">
-					<table>
-                                                <tr>    
-                                                        <td>
-                                                                <span class="portlet_bold">Your domain limit</span>
-                                                        </td>
-                                                        <td class="portlet_right">
-                                                                <span>[% user_domains %] / [% user_domain_limit %]</span>
-                                                        </td>
-                                                </tr>
-					[% IF session.user_type == 'admin' %]
-                                                <tr>
-                                                        <td>
-                                                                <span class="portlet_bold">Total system domains</span>
-                                                        </td>
-                                                        <td class="portlet_right">
-                                                                <span>[% system_domains %]<br></span>
-                                                        </td>
-                                                </tr>
-					[% END %]
-						<tr>
-							<td></td>
-							<td></td>
-						</tr>
-						                                                <tr>
-                                                        <td>
-                                                                <span class="portlet_bold">Your template limit</span>
-                                                        </td>
-                                                        <td class="portlet_right">
-                                                                <span>[% user_templates %] / [% user_template_limit %]</span>
-                                                        </td>
-                                                </tr>
-					</table>
-				</div>
-			</div>
+
+<div class="container">
+	<div class="row">
+		<div class="span4"><h4>Announcements</h4><p>[% motd %]</p></div>
+		<div class="span4"><h4>Usage</h4>
+			<table class="table">
+				<tr>
+					<td><strong>Your domain limit</strong></td>
+					<td>[% user_domains %] / [% user_domain_limit %]</td>
+				</tr>
+				[% IF session.user_type == 'admin' %]
+				<tr>
+					<td><strong>Total system domains</strong></td>
+					<td>[% system_domains %]</td>
+				</tr>
+				[% END %]
+				<tr>
+					<td><strong>Your template limit</strong></td>
+					<td>[% user_templates %] / [% user_template_limit %]</td>
+				</tr>
+			</table>
 		</div>
 	</div>
-	<div class="home_column">
-		<div class="portlet">
-			<div class="portlet_header">Latest domains</div>
-			<div class="portlet_content">
-				<div class="portlet_text ui-corner-all">
-					<table>
+	<div class="row">
+		<div class="span8"><h4>Latest Domains</h4>
+			<table class="table">
 				[% FOREACH id IN latest_domains.keys.sort %]
 					<tr>
 						<td>
 							<a href="/domains/edit/records/id/[% latest_domains.$id.id %]">[% latest_domains.$id.name %]</a>
+							<!--<a href="/domains/edit/records/id/[% latest_domains.$id.id %]">[% latest_domains.$id.name %]</a>-->
 						</td>
 					</tr>
 				[% END %]
-					</table>
-				</div>
-			</div>
-		</div>
-		<div class="portlet">
-			<div class="portlet_header">Latest templates</div>
-			<div class="portlet_content">
-                                <div class="portlet_text ui-corner-all">
-                                        <table>
-                                [% FOREACH id IN latest_templates.keys.sort %]
-                                        <tr>
-                                                <td>
-                                                        <a href="/templates/edit/records/id/[% latest_templates.$id.id %]">[% latest_templates.$id.name %]</a>
-                                                </td>
-                                        </tr>
-                                [% END %]
-                                        </table>
-                                </div>
-                        </div>
-			</div>
+			</table>
 		</div>
 	</div>
-	<div class="content_break"></div>
+	<div class="row">
+		<div class="span8"><h4>Latest Templates</h4>
+			<table class="table">
+				[% FOREACH id IN latest_templates.keys.sort %]
+					<tr>
+						<td><a href="/templates/edit/records/id/[% latest_templates.$id.id %]">[% latest_templates.$id.name %]</a></td>
+					</tr>
+				[% END %]
+			</table>
+		</div>
+	</div>
 </div>
