@@ -731,6 +731,8 @@
 <div class="container navbar" id="mini_menu_bg">
 	<div class="navbar-inner">
 		<ul class="nav" id="mini_menu">
+			<li><a href="/domains"><i class="icon-arrow-left"></i></a></li>
+			<li class="divider-vertical"></li>
 			<li><a class="display_domain_info_button" href="#">Domain Information</a></li>
 			<li><a id="display_soa_button" href="#">SOA record</a></li>
 			[% IF domain_type == 'MASTER' || domain_type == 'NATIVE' %]
@@ -1175,8 +1177,8 @@
 		<p>Are you sure?</p>
 	</div>
 	<div class="modal-footer">
-		<a href="#" class="btn" data-dismiss="modal">Close</a>
 		<a href="#" class="btn btn-danger" id="confirm_action_delete_button">Delete</a>
+		<a href="#" class="btn" data-dismiss="modal">Close</a>
 	</div>
 </div>
 
@@ -1189,8 +1191,8 @@
 		<p>Applying a template to your domain will delete all current records.<br><br>Are you sure?</p>
 	</div>
 	<div class="modal-footer">
-		<a href="#" class="btn" data-dismiss="modal">Close</a>
 		<a href="#" class="btn btn-primary" id="confirm_action_template_button">Apply template</a>
+		<a href="#" class="btn" data-dismiss="modal">Close</a>
 	</div>
 </div>
 
@@ -1203,7 +1205,7 @@
 		<p>This will replace matched records (TODO: display 'em)<br />Are you sure?</p>
 	</div>
 	<div class="modal-footer">
-		<a href="#" class="btn" data-dismiss="modal">Close</a>
 		<a href="#" class="btn btn-primary" id="confirm_action_replace_button">Replace</a>
+		<a href="#" class="btn" data-dismiss="modal">Close</a>
 	</div>
 </div>
