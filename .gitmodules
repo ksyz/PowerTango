@@ -1,0 +1,3 @@
+[submodule "plugin::database"]
+	path = vendor/Dancer-Plugin-Database
+	url = https://github.com/bigpresh/Dancer-Plugin-Database
