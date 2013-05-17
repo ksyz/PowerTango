@@ -3,6 +3,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::Database;
 use Dancer::Plugin::FlashMessage;
 use Dancer::Plugin::Res;
+use Dancer::Plugin::Journal;
 use Dancer::Session::Storable;
 use Dancer::Template::TemplateToolkit;
 use Dancer::Exception qw(:all);
